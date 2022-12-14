@@ -44,19 +44,6 @@ func Test_MarshalBSON_is_the_inverse_of_UnmarshallBSON(t *testing.T) {
 	}
 }
 
-type builderAdapter struct {
-	builder *bsoncodec.RegistryBuilder
-}
-
-func (b builderAdapter) RegisterTypeEncoder(of reflect.Type, c *Codec) {
-	b.builder.RegisterTypeEncoder(of, c)
-}
-
-func (b builderAdapter) RegisterTypeDecoder(of reflect.Type, c *Codec) {
-	b.builder.RegisterTypeDecoder(of, c)
-
-}
-
 func registerCodex() {
 	codec, err := bsoncodec.NewStructCodec(bsoncodec.JSONFallbackStructTagParser)
 
@@ -68,6 +55,6 @@ func registerCodex() {
 	builder.RegisterDefaultEncoder(reflect.Struct, codec)
 	builder.RegisterDefaultDecoder(reflect.Struct, codec)
 
-	RegisterPercentBSONCodec(&builderAdapter{builder})
+	RegisterPercentBSONCodec(builder)
 	bson.DefaultRegistry = builder.Build()
 }
