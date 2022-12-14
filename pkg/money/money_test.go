@@ -398,10 +398,65 @@ func TestMoney_RoundDiv_half_even_rounding_mode(t *testing.T) {
 			divider: 10,
 			want:    MustParse("0.10", "MXN"),
 		},
+
+		{
+			name:    "-0.15",
+			a:       MustParse("-0.15", "MXN"),
+			divider: 10,
+			want:    MustParse("-0.02", "MXN"),
+		},
+		{
+			name:    "-0.25",
+			a:       MustParse("-0.25", "MXN"),
+			divider: 10,
+			want:    MustParse("-0.02", "MXN"),
+		},
+		{
+			name:    "-0.35",
+			a:       MustParse("-0.35", "MXN"),
+			divider: 10,
+			want:    MustParse("-0.04", "MXN"),
+		},
+		{
+			name:    "-0.45",
+			a:       MustParse("-0.45", "MXN"),
+			divider: 10,
+			want:    MustParse("-0.04", "MXN"),
+		},
+		{
+			name:    "-0.55",
+			a:       MustParse("-0.55", "MXN"),
+			divider: 10,
+			want:    MustParse("-0.06", "MXN"),
+		},
+		{
+			name:    "-0.65",
+			a:       MustParse("-0.65", "MXN"),
+			divider: 10,
+			want:    MustParse("-0.06", "MXN"),
+		},
+		{
+			name:    "-.075",
+			a:       MustParse("-0.75", "MXN"),
+			divider: 10,
+			want:    MustParse("-0.08", "MXN"),
+		},
+		{
+			name:    "-0.85",
+			a:       MustParse("-0.85", "MXN"),
+			divider: 10,
+			want:    MustParse("-0.08", "MXN"),
+		},
+		{
+			name:    "-0.95",
+			a:       MustParse("-0.95", "MXN"),
+			divider: 10,
+			want:    MustParse("-0.10", "MXN"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, tt.a.RoundedDiv(tt.divider), "RoundedDiv(%v)", tt.divider)
+			assert.Equalf(t, tt.want, tt.a.RoundedDiv(tt.divider), "%v.RoundedDiv(%v)", tt.a, tt.divider)
 		})
 	}
 }

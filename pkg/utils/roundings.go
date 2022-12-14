@@ -1,6 +1,10 @@
 package utils
 
 func HalfEvenRounding(a, b int64) int64 {
+	if a > 0 && b < 0 || a < 0 && b > 0 {
+		return -HalfEvenRounding(-a, b)
+	}
+
 	r := a * 2 / b // make division keeping first bit of remaining
 
 	switch r & 0b11 {
