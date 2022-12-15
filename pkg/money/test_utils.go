@@ -1,6 +1,8 @@
 package money
 
-import "github.com/stretchr/testify/assert"
+import (
+	"github.com/stretchr/testify/assert"
+)
 
 func EqualAmount(t assert.TestingT, expected Money, actual Money) {
 	assert.Equal(t, expected.CurrencyCode(), actual.CurrencyCode())

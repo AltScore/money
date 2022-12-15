@@ -2,6 +2,7 @@ package money
 
 import (
 	"fmt"
+	"github.com/AltScore/money/pkg/utils"
 	"math"
 
 	"github.com/AltScore/money/pkg/parsers"
@@ -148,8 +149,8 @@ func (a Money) Div(divider int64) Money {
 func (a Money) RoundedDiv(divider int64) Money {
 	ma := a.asMoney()
 
-	mul := ma.Amount()*2/divider + 1
-	return fromEquivalentInt(mul/2, a.CurrencyCode())
+	div := utils.HalfEvenRounding(ma.Amount(), divider)
+	return fromEquivalentInt(div, a.CurrencyCode())
 }
 
 func (a Money) CurrencyCode() string {
