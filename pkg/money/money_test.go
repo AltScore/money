@@ -3,12 +3,11 @@ package money
 import (
 	"testing"
 
-	"github.com/bojanz/currency"
 	"github.com/stretchr/testify/assert"
 )
 
 func Test_Currency_can_be_copied(t *testing.T) {
-	a, _ := currency.NewAmount("100", "USD")
+	a, _ := Parse("100", "USD")
 
 	b := a
 
