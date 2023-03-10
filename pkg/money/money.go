@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/AltScore/money/pkg/utils"
 	"math"
+	"sync"
 
 	"github.com/AltScore/money/pkg/parsers"
 	m "github.com/Rhymond/go-money"
@@ -272,26 +273,42 @@ type scale struct {
 	Float float64
 }
 
-type scaleMap map[int]scale
-
-var scales = scaleMap{}
-
-func (s scaleMap) GetScale(fraction int) scale {
-	if _, ok := s[fraction]; !ok {
-		pow10 := math.Pow10(fraction)
-		s[fraction] = scale{
-			Int:   int64(pow10),
-			Float: pow10,
-		}
-	}
-
-	return s[fraction]
+type scaleMap struct {
+	scales map[int]scale
+	lock   sync.RWMutex
 }
 
-func (s scaleMap) Int(decimals int) int64 {
+var scales = scaleMap{
+	scales: make(map[int]scale),
+	lock:   sync.RWMutex{},
+}
+
+func (s *scaleMap) GetScale(fraction int) scale {
+	s.lock.RLock()
+	if value, ok := s.scales[fraction]; ok {
+		s.lock.RUnlock()
+		return value
+	}
+
+	s.lock.RUnlock()
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
+	pow10 := math.Pow10(fraction)
+	newScale := scale{
+		Int:   int64(pow10),
+		Float: pow10,
+	}
+
+	s.scales[fraction] = newScale
+
+	return newScale
+}
+
+func (s *scaleMap) Int(decimals int) int64 {
 	return s.GetScale(decimals).Int
 }
 
-func (s scaleMap) Float(decimals int) float64 {
+func (s *scaleMap) Float(decimals int) float64 {
 	return s.GetScale(decimals).Float
 }
