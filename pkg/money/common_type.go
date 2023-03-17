@@ -24,6 +24,10 @@ func FromCommonType(cm CommonTypeMoney) Money {
 	)
 }
 
+func AsCommonType(m Money) CommonTypeMoney {
+	return m
+}
+
 func (m Money) Decimals() int {
 	return m.asMoney().Currency().Fraction
 }

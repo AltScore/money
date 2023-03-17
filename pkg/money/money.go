@@ -162,6 +162,10 @@ func (a Money) CurrencyCode() string {
 	return currency.Code
 }
 
+func (a Money) GetCurrencyCode() string {
+	return a.CurrencyCode()
+}
+
 func (a Money) Cmp(b Money) int {
 	if cmp, err := a.TryCmp(b); err != nil {
 		panic(err)
