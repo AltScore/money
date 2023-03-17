@@ -6,6 +6,7 @@ import (
 
 const NanoDecimals = 9
 
+// CommonTypeMoney allows to use a Google Common Type Money without creating a dependency on that package.
 type CommonTypeMoney interface {
 	GetCurrencyCode() string
 	GetUnits() int64
