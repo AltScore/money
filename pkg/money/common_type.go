@@ -24,7 +24,7 @@ func FromCommonType(cm CommonTypeMoney) Money {
 	)
 }
 
-func AsCommonType(m Money) CommonTypeMoney {
+func (m Money) AsCommonType() CommonTypeMoney {
 	return m
 }
 
