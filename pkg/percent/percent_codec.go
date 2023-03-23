@@ -9,6 +9,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson/bsontype"
 )
 
+type BsonRegistryBuilder interface {
+	RegisterTypeEncoder(t reflect.Type, dec bsoncodec.ValueEncoder)
+	RegisterTypeDecoder(t reflect.Type, dec bsoncodec.ValueDecoder)
+}
+
 // Codec is the Codec used for percent.Percent values.
 type Codec struct {
 	typeOf reflect.Type
@@ -24,7 +29,7 @@ var (
 )
 
 // RegisterPercentBSONCodec register in the BSON registry a Codec to handle objects values of type percent.Percent
-func RegisterPercentBSONCodec(builder *bsoncodec.RegistryBuilder) {
+func RegisterPercentBSONCodec(builder BsonRegistryBuilder) {
 	codec := Codec{
 		typeOf: reflect.TypeOf(Zero),
 	}

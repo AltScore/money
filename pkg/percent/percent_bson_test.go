@@ -55,6 +55,18 @@ func registerCodex() {
 	builder.RegisterDefaultEncoder(reflect.Struct, codec)
 	builder.RegisterDefaultDecoder(reflect.Struct, codec)
 
-	RegisterPercentBSONCodec(builder)
+	RegisterPercentBSONCodec(bsonRegistryBuilderAdapter{builder})
 	bson.DefaultRegistry = builder.Build()
+}
+
+type bsonRegistryBuilderAdapter struct {
+	*bsoncodec.RegistryBuilder
+}
+
+func (b bsonRegistryBuilderAdapter) RegisterTypeEncoder(t reflect.Type, dec bsoncodec.ValueEncoder) {
+	b.RegistryBuilder.RegisterTypeEncoder(t, dec)
+}
+
+func (b bsonRegistryBuilderAdapter) RegisterTypeDecoder(t reflect.Type, dec bsoncodec.ValueDecoder) {
+	b.RegistryBuilder.RegisterTypeDecoder(t, dec)
 }
