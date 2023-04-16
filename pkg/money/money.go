@@ -198,7 +198,11 @@ func (a Money) TryCmp(b Money) (int, error) {
 }
 
 func (a Money) String() string {
-	return a.asMoney().Display()
+	money := a.asMoney()
+	if money.Currency() == nil {
+		return fmt.Sprintf("%v", money.Amount())
+	}
+	return money.Display()
 }
 
 func (a Money) GoString() string {

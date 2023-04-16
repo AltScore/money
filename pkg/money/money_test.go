@@ -459,3 +459,47 @@ func TestMoney_RoundDiv_half_even_rounding_mode(t *testing.T) {
 		})
 	}
 }
+
+func TestMoney_String(t *testing.T) {
+	tests := []struct {
+		name string
+		a    Money
+		want string
+	}{
+		{
+			name: "Zero",
+			a:    MustParse("0.00", "MXN"),
+			want: "$0.00",
+		},
+		{
+			name: "Negative",
+			a:    MustParse("-1.00", "MXN"),
+			want: "-$1.00",
+		},
+		{
+			name: "Positive",
+			a:    MustParse("1.00", "MXN"),
+			want: "$1.00",
+		},
+		{
+			name: "Negative with cents",
+			a:    MustParse("-1.01", "MXN"),
+			want: "-$1.01",
+		},
+		{
+			name: "Positive with cents",
+			a:    MustParse("1.01", "MXN"),
+			want: "$1.01",
+		},
+		{
+			name: "empty",
+			a:    Money{},
+			want: "0",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, tt.a.String(), "String()")
+		})
+	}
+}
