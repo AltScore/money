@@ -1,9 +1,5 @@
 package money
 
-import (
-	m "github.com/Rhymond/go-money"
-)
-
 const NanoDecimals = 9
 
 // CommonTypeMoney allows to use a Google Common Type Money without creating a dependency on that package.
@@ -14,7 +10,7 @@ type CommonTypeMoney interface {
 }
 
 func FromCommonType(cm CommonTypeMoney) Money {
-	currency := m.GetCurrency(cm.GetCurrencyCode())
+	currency := getCurrencyWithDefault(cm.GetCurrencyCode())
 
 	scale := scales.Int(currency.Fraction)
 	nanosScale := scales.Int(NanoDecimals - currency.Fraction)
@@ -26,7 +22,10 @@ func FromCommonType(cm CommonTypeMoney) Money {
 }
 
 func (m Money) Decimals() int {
-	return m.asMoney().Currency().Fraction
+	if m.currency == nil {
+		return 0
+	}
+	return m.currency.Fraction
 }
 
 func (m Money) AsUnitsAndNanos() (int64, int32) {
@@ -34,7 +33,7 @@ func (m Money) AsUnitsAndNanos() (int64, int32) {
 
 	scale := scales.Int(decimals)
 
-	intAmount := m.asMoney().Amount()
+	intAmount := m.amount
 
 	nanosScale := scales.Int(NanoDecimals - decimals)
 

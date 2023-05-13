@@ -41,17 +41,13 @@ func (a *Money) UnmarshalBSON(b []byte) error {
 
 	}
 
-	ref := m.New(amount, bm.Currency)
-
-	*a = Money(*ref)
+	*a = fromEquivalentInt(amount, bm.Currency)
 	return nil
 }
 
 // MarshalBSON is implementation of bson.Marshaller
 func (a Money) MarshalBSON() ([]byte, error) {
-	ma := a.asMoney()
-
-	currencyCode, amountStr := formatAsNumber(ma)
+	currencyCode, amountStr := a.formatAsNumber()
 
 	bm := bsonMoney{
 		Amount:   amountStr,

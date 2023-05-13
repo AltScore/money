@@ -1,58 +1,58 @@
 package money
 
 import (
+	"errors"
 	"fmt"
 	"math"
+	"strconv"
 	"sync"
 
 	"github.com/AltScore/money/pkg/utils"
+	"go.uber.org/zap"
 
 	"github.com/AltScore/money/pkg/parsers"
-	m "github.com/Rhymond/go-money"
 )
 
-type Money m.Money
+var (
+	ErrInvalidJSONUnmarshal = errors.New("invalid json unmarshal")
+)
 
-const USD = "USD"
-
-var defaultCurrency = m.GetCurrency(USD)
+type Money struct {
+	amount   int64
+	currency *Currency
+}
 
 func Zero(currencyCode string) Money {
 	return NewFromInt(0, currencyCode)
 }
 
 func NewFromInt(amount int64, currencyCode string) Money {
-	currency := m.GetCurrency(currencyCode)
+	currency := getCurrencyWithDefault(currencyCode)
 
 	return fromEquivalentInt(amount*scales.Int(currency.Fraction), currencyCode)
 }
 
 func fromEquivalentInt(amount int64, currencyCode string) Money {
-	return (Money)(*m.New(amount, currencyCode))
+	return Money{
+		amount:   amount,
+		currency: getCurrencyWithDefault(currencyCode),
+	}
 }
 
 func FromFloat64(amount float64, currencyCode string) Money {
-	if currencyCode == "" {
-		panic(fmt.Errorf("currencyCode is empty"))
-	}
-
-	currency := m.GetCurrency(currencyCode)
-
-	if currency == nil {
-		panic(fmt.Sprintf("Currency %s not found", currencyCode))
-	}
+	currency := getCurrencyWithDefault(currencyCode)
 
 	amountInt := float2EquivalentInt(amount, currency)
 
 	return fromEquivalentInt(amountInt, currencyCode)
 }
 
-func float2EquivalentInt(amount float64, currency *m.Currency) int64 {
+func float2EquivalentInt(amount float64, currency *Currency) int64 {
 	return int64(math.Round(amount * scales.Float(currency.Fraction)))
 }
 
 func Parse(amount string, currencyCode string) (Money, error) {
-	currency := m.GetCurrency(currencyCode)
+	currency := getCurrencyWithDefault(currencyCode)
 
 	amountInt, err := parsers.ParseNumber(amount, currency.Fraction)
 
@@ -64,15 +64,30 @@ func Parse(amount string, currencyCode string) (Money, error) {
 }
 
 func MustParse(amount string, currencyCode string) Money {
-	currency := m.GetCurrency(currencyCode)
+	currency := getCurrencyWithDefault(currencyCode)
 
 	amountInt, err := parsers.ParseNumber(amount, currency.Fraction)
 
 	if err != nil {
-		panic(m.ErrInvalidJSONUnmarshal)
+		panic(ErrInvalidJSONUnmarshal)
 	}
 
 	return fromEquivalentInt(amountInt, currencyCode)
+}
+
+// SameCurrency check if given Money is equals by currency.
+func (m Money) SameCurrency(om Money) bool {
+	return m.currency.Equals(om.currency)
+}
+
+var ErrCurrencyMismatch = fmt.Errorf("currencies don't match")
+
+func (m Money) assertSameCurrency(om Money) error {
+	if !m.SameCurrency(om) {
+		return ErrCurrencyMismatch
+	}
+
+	return nil
 }
 
 // Add sums the values including Zero
@@ -85,35 +100,30 @@ func (a Money) Add(b Money) Money {
 }
 
 func (a Money) TryAdd(b Money) (Money, error) {
-	am := a.asMoney()
-
-	if am.IsZero() {
+	if a.IsZero() {
 		return b, nil
 	}
 
-	bm := b.asMoney()
-
-	if bm.IsZero() {
+	if b.IsZero() {
 		return a, nil
 	}
 
-	add, err := am.Add(bm)
-	if err != nil {
+	if err := a.assertSameCurrency(b); err != nil {
 		return a, err
 	}
-	return (Money)(*add), err
+
+	return Money{
+		amount:   a.amount + b.amount,
+		currency: a.currency,
+	}, nil
 }
 
 func (a Money) Equal(another Money) bool {
-	if equal, err := a.TryEqual(another); err != nil {
-		panic(err)
-	} else {
-		return equal
-	}
+	return a.amount == another.amount && a.currency.Equals(another.currency)
 }
 
 func (a Money) TryEqual(another Money) (bool, error) {
-	return a.asMoney().Equals((*m.Money)(&another))
+	return a.Equal(another), nil
 }
 
 func (a Money) TrySub(b Money) (Money, error) {
@@ -123,8 +133,10 @@ func (a Money) TrySub(b Money) (Money, error) {
 		return b.Negated(), nil
 	}
 
-	subtract, err := a.asMoney().Subtract(b.asMoney())
-	return (Money)(*subtract), err
+	return Money{
+		amount:   a.amount - b.amount,
+		currency: a.currency,
+	}, a.assertSameCurrency(b)
 }
 
 func (a Money) Sub(b Money) Money {
@@ -136,27 +148,28 @@ func (a Money) Sub(b Money) Money {
 }
 
 func (a Money) Mul(multiplier int64) Money {
-	ma := a.asMoney()
-	mul := ma.Multiply(multiplier)
-	return (Money)(*mul)
+	return Money{
+		amount:   a.amount * multiplier,
+		currency: a.currency,
+	}
 }
 
 func (a Money) Div(divider int64) Money {
-	ma := a.asMoney()
-
-	mul := ma.Amount() / divider
-	return fromEquivalentInt(mul, a.CurrencyCode())
+	return Money{
+		amount:   a.amount / divider,
+		currency: a.currency,
+	}
 }
 
 func (a Money) RoundedDiv(divider int64) Money {
-	ma := a.asMoney()
-
-	div := utils.HalfEvenRounding(ma.Amount(), divider)
-	return fromEquivalentInt(div, a.CurrencyCode())
+	return Money{
+		amount:   utils.HalfEvenRounding(a.amount, divider),
+		currency: a.currency,
+	}
 }
 
 func (a Money) CurrencyCode() string {
-	currency := a.asMoney().Currency()
+	currency := a.currency
 	if currency == nil {
 		return ""
 	}
@@ -184,14 +197,13 @@ func (a Money) TryCmp(b Money) (int, error) {
 		return -b.Sign(), nil
 	}
 
-	am := a.asMoney()
-	bm := b.asMoney()
+	err := a.assertSameCurrency(b)
 
-	if isLess, err := am.LessThan(bm); err != nil {
+	if err != nil {
 		return 0, err
-	} else if isLess {
+	} else if a.amount < b.amount {
 		return -1, nil
-	} else if isEqual, _ := am.Equals(bm); isEqual {
+	} else if a.amount == b.amount {
 		return 0, nil
 	} else {
 		return 1, nil
@@ -199,36 +211,29 @@ func (a Money) TryCmp(b Money) (int, error) {
 }
 
 func (a Money) String() string {
-	money := a.asMoney()
-	if money.Currency() == nil {
-		return fmt.Sprintf("%v", money.Amount())
-	}
-	return money.Display()
+	return a.currency.Formatter().Format(a.amount)
+
 }
 
 func (a Money) GoString() string {
 	return fmt.Sprintf("money.FromFloat64(%v, %q)", a.Number(), a.CurrencyCode())
 }
 
-func (a Money) asMoney() *m.Money {
-	return (*m.Money)(&a)
-}
-
 func (a Money) Amount() string {
-	_, number := formatAsNumber(a.asMoney())
+	_, number := a.formatAsNumber()
 	return number
 }
 
 func (a Money) IsZero() bool {
-	return a.asMoney().IsZero()
+	return a.amount == 0
 }
 
 func (a Money) IsNegative() bool {
-	return a.asMoney().IsNegative()
+	return a.amount < 0
 }
 
 func (a Money) IsPositive() bool {
-	return a.asMoney().IsPositive()
+	return a.amount > 0
 }
 
 func (a Money) LessThan(amount Money) bool {
@@ -242,16 +247,14 @@ func (a Money) IsLessThanEqual(line Money) bool {
 }
 
 func (a Money) Number() float64 {
-	money := a.asMoney()
-	if money.IsZero() {
+	if a.IsZero() {
 		return 0
 	}
-	return float64(money.Amount()) / math.Pow10(money.Currency().Fraction)
+	return float64(a.amount) / math.Pow10(a.currency.Fraction)
 }
 
-func (a Money) CheckSameCurrency(total Money) error {
-	_, err := a.TryCmp(total)
-	return err
+func (a Money) CheckSameCurrency(other Money) error {
+	return a.assertSameCurrency(other)
 }
 
 func (a Money) IsGreaterThan(zero Money) bool {
@@ -266,7 +269,10 @@ func (a Money) Min(other Money) Money {
 }
 
 func (a Money) Negated() Money {
-	return fromEquivalentInt(-a.asMoney().Amount(), a.CurrencyCode())
+	return Money{
+		amount:   -a.amount,
+		currency: a.currency,
+	}
 }
 
 func (a Money) Sign() int {
@@ -276,6 +282,25 @@ func (a Money) Sign() int {
 		return 0
 	}
 	return -1
+}
+
+func (m Money) formatAsNumber() (string, string) { // make
+	currency := m.currency
+
+	if currency == nil {
+		if m.amount != 0 {
+			amount := strconv.FormatInt(m.amount, 10)
+			zap.L().Warn("Currency is nil, amount is " + amount)
+		}
+		currency = &defaultCurrency
+	}
+
+	formatter := *currency.Formatter()
+
+	formatter.Grapheme = "" // Remove grapheme
+	formatter.Thousand = "" // Remove thousand-separator
+	amountStr := formatter.Format(m.amount)
+	return currency.Code, amountStr
 }
 
 func MustAdd(a, b Money) Money {
