@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	currency2 "github.com/AltScore/money/pkg/money/currency"
 	"github.com/AltScore/money/pkg/parsers"
-	m "github.com/Rhymond/go-money"
 )
 
 // UnmarshalJSON is implementation of json.Unmarshaller
@@ -46,14 +46,14 @@ func jsonExtractAmount(data map[string]interface{}, currencyCode string) (int64,
 		return 0, nil
 	}
 
-	currency := getCurrencyWithDefault(currencyCode)
+	currency := currency2.GetOrDefault(currencyCode)
 
 	if amountStr, ok := amountRaw.(string); ok {
 
 		amount, err := parsers.ParseNumber(amountStr, currency.Fraction)
 
 		if err != nil {
-			return 0, m.ErrInvalidJSONUnmarshal
+			return 0, ErrInvalidJSONUnmarshal
 		}
 
 		return amount, nil
@@ -62,7 +62,7 @@ func jsonExtractAmount(data map[string]interface{}, currencyCode string) (int64,
 	// It is expressed as a number
 	amountFloat, ok := amountRaw.(float64)
 	if !ok {
-		return 0, m.ErrInvalidJSONUnmarshal
+		return 0, ErrInvalidJSONUnmarshal
 	}
 
 	return float2EquivalentInt(amountFloat, currency), nil
@@ -72,7 +72,7 @@ func jsonExtractCurrency(data map[string]interface{}) (string, error) {
 	if currencyRaw, ok := data["currency"]; !ok {
 		return "", nil
 	} else if currencyCode, ok := currencyRaw.(string); !ok {
-		return "", m.ErrInvalidJSONUnmarshal
+		return "", ErrInvalidJSONUnmarshal
 	} else {
 		return currencyCode, nil
 	}

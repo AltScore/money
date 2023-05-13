@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"sync"
 
+	"github.com/AltScore/money/pkg/money/currency"
 	"github.com/AltScore/money/pkg/utils"
 	"go.uber.org/zap"
 
@@ -19,7 +20,7 @@ var (
 
 type Money struct {
 	amount   int64
-	currency *Currency
+	currency *currency.Currency
 }
 
 func Zero(currencyCode string) Money {
@@ -27,34 +28,32 @@ func Zero(currencyCode string) Money {
 }
 
 func NewFromInt(amount int64, currencyCode string) Money {
-	currency := getCurrencyWithDefault(currencyCode)
-
-	return fromEquivalentInt(amount*scales.Int(currency.Fraction), currencyCode)
+	fraction := currency.GetOrDefault(currencyCode).Fraction
+	return fromEquivalentInt(amount*scales.Int(fraction), currencyCode)
 }
 
 func fromEquivalentInt(amount int64, currencyCode string) Money {
 	return Money{
 		amount:   amount,
-		currency: getCurrencyWithDefault(currencyCode),
+		currency: currency.GetOrDefault(currencyCode),
 	}
 }
 
 func FromFloat64(amount float64, currencyCode string) Money {
-	currency := getCurrencyWithDefault(currencyCode)
+	c := currency.GetOrDefault(currencyCode)
 
-	amountInt := float2EquivalentInt(amount, currency)
+	amountInt := float2EquivalentInt(amount, c)
 
 	return fromEquivalentInt(amountInt, currencyCode)
 }
 
-func float2EquivalentInt(amount float64, currency *Currency) int64 {
+func float2EquivalentInt(amount float64, currency *currency.Currency) int64 {
 	return int64(math.Round(amount * scales.Float(currency.Fraction)))
 }
 
 func Parse(amount string, currencyCode string) (Money, error) {
-	currency := getCurrencyWithDefault(currencyCode)
-
-	amountInt, err := parsers.ParseNumber(amount, currency.Fraction)
+	fraction := currency.GetOrDefault(currencyCode).Fraction
+	amountInt, err := parsers.ParseNumber(amount, fraction)
 
 	if err != nil {
 		return Money{}, err
@@ -64,9 +63,8 @@ func Parse(amount string, currencyCode string) (Money, error) {
 }
 
 func MustParse(amount string, currencyCode string) Money {
-	currency := getCurrencyWithDefault(currencyCode)
-
-	amountInt, err := parsers.ParseNumber(amount, currency.Fraction)
+	fraction := currency.GetOrDefault(currencyCode).Fraction
+	amountInt, err := parsers.ParseNumber(amount, fraction)
 
 	if err != nil {
 		panic(ErrInvalidJSONUnmarshal)
@@ -101,6 +99,10 @@ func (a Money) Add(b Money) Money {
 
 func (a Money) TryAdd(b Money) (Money, error) {
 	if a.IsZero() {
+		if b.currency == nil && b.amount == 0 {
+			// If zero is added to empty, return zero to preserve currency
+			return a, nil
+		}
 		return b, nil
 	}
 
@@ -169,11 +171,11 @@ func (a Money) RoundedDiv(divider int64) Money {
 }
 
 func (a Money) CurrencyCode() string {
-	currency := a.currency
-	if currency == nil {
+	cur := a.currency
+	if cur == nil {
 		return ""
 	}
-	return currency.Code
+	return cur.Code
 }
 
 // GetCurrencyCode required for Money to implement CommonTypeMoney
@@ -211,7 +213,7 @@ func (a Money) TryCmp(b Money) (int, error) {
 }
 
 func (a Money) String() string {
-	return a.currency.Formatter().Format(a.amount)
+	return a.currency.Format(a.amount)
 
 }
 
@@ -285,22 +287,22 @@ func (a Money) Sign() int {
 }
 
 func (m Money) formatAsNumber() (string, string) { // make
-	currency := m.currency
+	c := m.currency
 
-	if currency == nil {
+	if c == nil {
 		if m.amount != 0 {
 			amount := strconv.FormatInt(m.amount, 10)
 			zap.L().Warn("Currency is nil, amount is " + amount)
 		}
-		currency = &defaultCurrency
+		c = currency.GetOrDefault("")
 	}
 
-	formatter := *currency.Formatter()
+	formatter := *c
 
 	formatter.Grapheme = "" // Remove grapheme
 	formatter.Thousand = "" // Remove thousand-separator
 	amountStr := formatter.Format(m.amount)
-	return currency.Code, amountStr
+	return c.Code, amountStr
 }
 
 func MustAdd(a, b Money) Money {

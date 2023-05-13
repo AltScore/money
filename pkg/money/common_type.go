@@ -1,5 +1,9 @@
 package money
 
+import (
+	"github.com/AltScore/money/pkg/money/currency"
+)
+
 const NanoDecimals = 9
 
 // CommonTypeMoney allows to use a Google Common Type Money without creating a dependency on that package.
@@ -10,10 +14,10 @@ type CommonTypeMoney interface {
 }
 
 func FromCommonType(cm CommonTypeMoney) Money {
-	currency := getCurrencyWithDefault(cm.GetCurrencyCode())
+	cur := currency.GetOrDefault(cm.GetCurrencyCode())
 
-	scale := scales.Int(currency.Fraction)
-	nanosScale := scales.Int(NanoDecimals - currency.Fraction)
+	scale := scales.Int(cur.Fraction)
+	nanosScale := scales.Int(NanoDecimals - cur.Fraction)
 
 	return fromEquivalentInt(
 		cm.GetUnits()*scale+int64(cm.GetNanos())/nanosScale,

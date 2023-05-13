@@ -4,8 +4,8 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/AltScore/money/pkg/money/currency"
 	"github.com/AltScore/money/pkg/parsers"
-	m "github.com/Rhymond/go-money"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -26,15 +26,15 @@ func (a *Money) UnmarshalBSON(b []byte) error {
 		return err
 	}
 
-	currency := m.GetCurrency(bm.Currency)
+	cur := currency.GetOrDefault(bm.Currency)
 
 	am := bm.Amount
 
-	if currency.Decimal != "." {
-		am = strings.ReplaceAll(am, currency.Decimal, ".")
+	if cur.Decimal != "." {
+		am = strings.ReplaceAll(am, cur.Decimal, ".")
 	}
 
-	amount, err := parsers.ParseNumber(am, currency.Fraction)
+	amount, err := parsers.ParseNumber(am, cur.Fraction)
 
 	if err != nil {
 		return ErrInvalidBSONUnmarshal
