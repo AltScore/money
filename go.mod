@@ -3,7 +3,6 @@ module github.com/AltScore/money
 go 1.18
 
 require (
-	github.com/Rhymond/go-money v1.0.9
 	github.com/stretchr/testify v1.8.2
 	go.mongodb.org/mongo-driver v1.11.2
 	go.uber.org/zap v1.24.0
