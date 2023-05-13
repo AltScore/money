@@ -2,9 +2,10 @@ package money
 
 import (
 	"fmt"
-	"github.com/AltScore/money/pkg/utils"
 	"math"
 	"sync"
+
+	"github.com/AltScore/money/pkg/utils"
 
 	"github.com/AltScore/money/pkg/parsers"
 	m "github.com/Rhymond/go-money"
@@ -241,7 +242,11 @@ func (a Money) IsLessThanEqual(line Money) bool {
 }
 
 func (a Money) Number() float64 {
-	return float64(a.asMoney().Amount()) / math.Pow10(a.asMoney().Currency().Fraction)
+	money := a.asMoney()
+	if money.IsZero() {
+		return 0
+	}
+	return float64(money.Amount()) / math.Pow10(money.Currency().Fraction)
 }
 
 func (a Money) CheckSameCurrency(total Money) error {
