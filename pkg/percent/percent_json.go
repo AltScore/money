@@ -2,8 +2,11 @@ package percent
 
 import (
 	"encoding/json"
+	"errors"
+)
 
-	m "github.com/Rhymond/go-money"
+var (
+	ErrInvalidJSONUnmarshal = errors.New("invalid json unmarshal")
 )
 
 // UnmarshalJSON is implementation of json.Unmarshaller
@@ -31,7 +34,7 @@ func (p *Percent) UnmarshalJSON(b []byte) error {
 		percentFloat, ok := dataRaw.(float64)
 
 		if !ok {
-			return m.ErrInvalidJSONUnmarshal
+			return ErrInvalidJSONUnmarshal
 		}
 
 		*p = Percent(int64(percentFloat * Scale))

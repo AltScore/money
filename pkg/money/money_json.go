@@ -3,11 +3,9 @@ package money
 import (
 	"encoding/json"
 	"fmt"
-	"strconv"
 
+	currency2 "github.com/AltScore/money/pkg/money/currency"
 	"github.com/AltScore/money/pkg/parsers"
-	m "github.com/Rhymond/go-money"
-	"go.uber.org/zap"
 )
 
 // UnmarshalJSON is implementation of json.Unmarshaller
@@ -30,14 +28,14 @@ func (a *Money) UnmarshalJSON(b []byte) error {
 		return err
 	}
 
-	var ref *m.Money
+	var ref Money
 	if amount == 0 && currencyCode == "" {
-		ref = &m.Money{}
+		ref = Money{}
 	} else {
-		ref = m.New(amount, currencyCode)
+		ref = fromEquivalentInt(amount, currencyCode)
 	}
 
-	*a = Money(*ref)
+	*a = ref
 	return nil
 
 }
@@ -48,14 +46,14 @@ func jsonExtractAmount(data map[string]interface{}, currencyCode string) (int64,
 		return 0, nil
 	}
 
-	currency := m.GetCurrency(currencyCode)
+	currency := currency2.GetOrDefault(currencyCode)
 
 	if amountStr, ok := amountRaw.(string); ok {
 
 		amount, err := parsers.ParseNumber(amountStr, currency.Fraction)
 
 		if err != nil {
-			return 0, m.ErrInvalidJSONUnmarshal
+			return 0, ErrInvalidJSONUnmarshal
 		}
 
 		return amount, nil
@@ -64,7 +62,7 @@ func jsonExtractAmount(data map[string]interface{}, currencyCode string) (int64,
 	// It is expressed as a number
 	amountFloat, ok := amountRaw.(float64)
 	if !ok {
-		return 0, m.ErrInvalidJSONUnmarshal
+		return 0, ErrInvalidJSONUnmarshal
 	}
 
 	return float2EquivalentInt(amountFloat, currency), nil
@@ -74,7 +72,7 @@ func jsonExtractCurrency(data map[string]interface{}) (string, error) {
 	if currencyRaw, ok := data["currency"]; !ok {
 		return "", nil
 	} else if currencyCode, ok := currencyRaw.(string); !ok {
-		return "", m.ErrInvalidJSONUnmarshal
+		return "", ErrInvalidJSONUnmarshal
 	} else {
 		return currencyCode, nil
 	}
@@ -82,37 +80,15 @@ func jsonExtractCurrency(data map[string]interface{}) (string, error) {
 
 // MarshalJSON is implementation of json.Marshaller
 func (a Money) MarshalJSON() ([]byte, error) {
-	ma := a.asMoney()
-
 	var jsonValue string
 
-	if ma.Currency() == nil {
-		jsonValue = fmt.Sprintf(`{"amount":"%d","currency":"?","display":"%d"}`, ma.Amount(), ma.Amount())
+	if a.currency == nil {
+		jsonValue = fmt.Sprintf(`{"amount":"%d","currency":"?","display":"%d"}`, a.amount, a.amount)
 	} else {
-		currencyCode, amountStr := formatAsNumber(ma)
+		currencyCode, amountStr := a.formatAsNumber()
 
-		jsonValue = fmt.Sprintf(`{"amount":"%s","currency":"%s","display":"%s"}`, amountStr, currencyCode, ma.Display())
+		jsonValue = fmt.Sprintf(`{"amount":"%s","currency":"%s","display":"%s"}`, amountStr, currencyCode, a.String())
 	}
 
 	return []byte(jsonValue), nil
-}
-
-// move this to formatter in github.com/Rhymond/go-money
-func formatAsNumber(ma *m.Money) (string, string) {
-	currency := ma.Currency()
-
-	if currency == nil {
-		if ma.Amount() != 0 {
-			amount := strconv.FormatInt(ma.Amount(), 10)
-			zap.L().Warn("Currency is nil, amount is " + amount)
-		}
-		currency = defaultCurrency
-	}
-
-	formatter := *currency.Formatter()
-
-	formatter.Grapheme = "" // Remove grapheme
-	formatter.Thousand = "" // Remove thousand-separator
-	amountStr := formatter.Format(ma.Amount())
-	return currency.Code, amountStr
 }

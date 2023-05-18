@@ -1,7 +1,7 @@
 package money
 
 import (
-	m "github.com/Rhymond/go-money"
+	"github.com/AltScore/money/pkg/money/currency"
 )
 
 const NanoDecimals = 9
@@ -14,10 +14,10 @@ type CommonTypeMoney interface {
 }
 
 func FromCommonType(cm CommonTypeMoney) Money {
-	currency := m.GetCurrency(cm.GetCurrencyCode())
+	cur := currency.GetOrDefault(cm.GetCurrencyCode())
 
-	scale := scales.Int(currency.Fraction)
-	nanosScale := scales.Int(NanoDecimals - currency.Fraction)
+	scale := scales.Int(cur.Fraction)
+	nanosScale := scales.Int(NanoDecimals - cur.Fraction)
 
 	return fromEquivalentInt(
 		cm.GetUnits()*scale+int64(cm.GetNanos())/nanosScale,
@@ -26,7 +26,10 @@ func FromCommonType(cm CommonTypeMoney) Money {
 }
 
 func (m Money) Decimals() int {
-	return m.asMoney().Currency().Fraction
+	if m.currency == nil {
+		return 0
+	}
+	return m.currency.Fraction
 }
 
 func (m Money) AsUnitsAndNanos() (int64, int32) {
@@ -34,7 +37,7 @@ func (m Money) AsUnitsAndNanos() (int64, int32) {
 
 	scale := scales.Int(decimals)
 
-	intAmount := m.asMoney().Amount()
+	intAmount := m.amount
 
 	nanosScale := scales.Int(NanoDecimals - decimals)
 

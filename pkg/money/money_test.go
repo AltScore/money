@@ -593,3 +593,95 @@ func TestMoney_Sprintf(t *testing.T) {
 		})
 	}
 }
+
+func TestMoney_TryAdd(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		value   Money
+		args    Money
+		want    Money
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name:    "Add 1.00 + 1.00",
+			value:   MustParse("1.00", "MXN"),
+			args:    MustParse("1.00", "MXN"),
+			want:    MustParse("2.00", "MXN"),
+			wantErr: assert.NoError,
+		},
+		{
+			name:    "Add 0.00 + 42.23",
+			value:   MustParse("0.00", "MXN"),
+			args:    MustParse("42.23", "MXN"),
+			want:    MustParse("42.23", "MXN"),
+			wantErr: assert.NoError,
+		},
+		{
+			name:    "Add 1.00 + empty",
+			value:   MustParse("1.00", "MXN"),
+			args:    Money{},
+			want:    MustParse("1.00", "MXN"),
+			wantErr: assert.NoError,
+		},
+		{
+			name:    "Add empty + 1.00",
+			value:   Money{},
+			args:    MustParse("1.00", "MXN"),
+			want:    MustParse("1.00", "MXN"),
+			wantErr: assert.NoError,
+		},
+		{
+			name:    "Add 0 + 3132.23",
+			value:   MustParse("0", "MXN"),
+			args:    MustParse("3132.23", "MXN"),
+			want:    MustParse("3132.23", "MXN"),
+			wantErr: assert.NoError,
+		},
+		{
+			name:    "Add 54343.12 + 0",
+			value:   MustParse("54343.12", "MXN"),
+			args:    MustParse("0", "MXN"),
+			want:    MustParse("54343.12", "MXN"),
+			wantErr: assert.NoError,
+		},
+		{
+			name:    "Add 0 + 0",
+			value:   MustParse("0", "MXN"),
+			args:    MustParse("0", "MXN"),
+			want:    MustParse("0", "MXN"),
+			wantErr: assert.NoError,
+		},
+		{
+			name:    "Add 0 + empty",
+			value:   MustParse("0", "MXN"),
+			args:    Money{},
+			want:    MustParse("0", "MXN"),
+			wantErr: assert.NoError,
+		},
+		{
+			name:    "Add empty + 0",
+			value:   Money{},
+			args:    MustParse("0", "MXN"),
+			want:    MustParse("0", "MXN"),
+			wantErr: assert.NoError,
+		},
+		{
+			name:    "Add empty + empty",
+			value:   Money{},
+			args:    Money{},
+			want:    Money{},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			a := tt.value
+			got, err := a.TryAdd(tt.args)
+			if !tt.wantErr(t, err, fmt.Sprintf("TryAdd(%v)", tt.args)) {
+				return
+			}
+			assert.Equalf(t, tt.want, got, "TryAdd(%v)", tt.args)
+		})
+	}
+}
