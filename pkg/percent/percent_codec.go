@@ -29,18 +29,24 @@ var (
 )
 
 // RegisterPercentBSONCodec register in the BSON registry a Codec to handle objects values of type percent.Percent
+// Prefer to use Register method
 func RegisterPercentBSONCodec(builder BsonRegistryBuilder) {
-	codec := Codec{
-		typeOf: reflect.TypeOf(Zero),
-	}
+	codec := NewPercentCodec()
 
-	builder.RegisterTypeEncoder(codec.typeOf, &codec)
-	builder.RegisterTypeDecoder(codec.typeOf, &codec)
+	builder.RegisterTypeEncoder(codec.typeOf, codec)
+	builder.RegisterTypeDecoder(codec.typeOf, codec)
 }
 
 // NewPercentCodec returns a PercentCodec with options opts.
 func NewPercentCodec() *Codec {
-	return &Codec{}
+	return &Codec{
+		typeOf: reflect.TypeOf(Zero),
+	}
+}
+
+func (pc *Codec) Register(registryBuilder *bsoncodec.RegistryBuilder) {
+	registryBuilder.RegisterTypeEncoder(pc.typeOf, pc)
+	registryBuilder.RegisterTypeDecoder(pc.typeOf, pc)
 }
 
 //nolint:cyclop // this is a simple switch for type matching
