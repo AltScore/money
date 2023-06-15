@@ -3,22 +3,29 @@ package percent
 import (
 	"errors"
 	"fmt"
+	"math"
+
 	"github.com/AltScore/money/pkg/money"
 	"github.com/AltScore/money/pkg/parsers"
-	"math"
 )
 
 // Percent is a 3 decimal percent value. Internally it is stored as an int64 with a 3 digits scale
-//   interestRate := percent.FromStr("3.5")
+//
+//	interestRate := percent.FromStr("3.5")
+//
 // It represents a 3.5% (a 0.03500) factor, and stored as 3500
 type Percent int64
 
-const Decimals = 4
-const Scale = 10000
-const ScaledPercentToRate = 100 * Scale
+const (
+	Decimals            = 4
+	Scale               = 10000
+	ScaledPercentToRate = 100 * Scale
+	Zero                = Percent(0)
+	OneHundred          = Percent(ScaledPercentToRate)
 
-const Zero = Percent(0)
-const OneHundred = Percent(ScaledPercentToRate)
+	// InterestRateNormalizingPeriod is the number of days in a period for the normalized interest rate (MIR).
+	InterestRateNormalizingPeriod = 30
+)
 
 var ErrDivisionByZero = errors.New("division by zero")
 
@@ -87,10 +94,14 @@ func MustParse(pctStr string) Percent {
 	}
 }
 
+// By multiplies the given amount by this percent and returns the result amount.
+// It does not round the result.
 func (p Percent) By(amount money.Money) money.Money {
 	return amount.Mul(int64(p)).Div(ScaledPercentToRate)
 }
 
+// RoundedBy multiplies the given amount by this percent and returns the result amount.
+// It rounds the result using Money.RoundedDiv()
 func (p Percent) RoundedBy(amount money.Money) money.Money {
 	return amount.Mul(int64(p)).RoundedDiv(ScaledPercentToRate)
 }
@@ -150,11 +161,12 @@ func (p Percent) Factor() float64 {
 // Used to convert Nominal Interested Rate to Effective Interest Rates.
 //
 // The problem:
-//  We have the monthly (30 days) rate
-//  We need the rate for 60 days (2 months)
-//  We need the rate for 90 days (3 months)
-//  We need the rate for 15 days (half months)
-//  We need the rate for 45 days (one and a half months)
+//
+//	We have the monthly (30 days) rate
+//	We need the rate for 60 days (2 months)
+//	We need the rate for 90 days (3 months)
+//	We need the rate for 15 days (half months)
+//	We need the rate for 45 days (one and a half months)
 func (p Percent) ChangePeriod(periodSize, newPeriodSize int) Percent {
 	if periodSize == newPeriodSize {
 		return p
@@ -165,10 +177,25 @@ func (p Percent) ChangePeriod(periodSize, newPeriodSize int) Percent {
 	return FromFactor(rate)
 }
 
+// ChangePeriodLinearly converts a nominal interest rate to an interest rate for a given period.
+// It is calculated as a linear interpolation between the nominal rate and the
+// nominal rate for a period of InterestRateNormalizingPeriod.
+func (p Percent) ChangePeriodLinearly(period uint) Percent {
+	if period == InterestRateNormalizingPeriod {
+		return p
+	}
+
+	rate := p.Factor() * float64(period) / InterestRateNormalizingPeriod
+
+	return FromFactor(rate)
+}
+
+// GreaterThan returns true if this percent is greater than the other percent
 func (p Percent) GreaterThan(percent Percent) bool {
 	return p > percent
 }
 
+// LessThan returns true if this percent is less than the other percent
 func (p Percent) LessThan(percent Percent) bool {
 	return p < percent
 }

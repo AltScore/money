@@ -471,3 +471,48 @@ func TestPercent_ExtractRoundedPercentFromTotal(t *testing.T) {
 		})
 	}
 }
+
+func TestPercent_ChangePeriodLinearly(t *testing.T) {
+	tests := []struct {
+		name      string
+		p         Percent
+		newPeriod uint
+		want      Percent
+	}{
+		{
+			name:      "Zero percent",
+			p:         MustParse("0.00"),
+			newPeriod: 1,
+			want:      MustParse("0.00"),
+		},
+		{
+			name:      "Zero percent",
+			p:         MustParse("0.00"),
+			newPeriod: 2,
+			want:      MustParse("0.00"),
+		},
+		{
+			name:      "some percent same period",
+			p:         MustParse("10.00"),
+			newPeriod: InterestRateNormalizingPeriod,
+			want:      MustParse("10.00"),
+		},
+		{
+			name:      "some percent daily period",
+			p:         MustParse("30.00"),
+			newPeriod: 1,
+			want:      MustParse("1.00"),
+		},
+		{
+			name:      "some percent 5 days period",
+			p:         MustParse("3.00"),
+			newPeriod: 5,
+			want:      MustParse("0.50"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, tt.p.ChangePeriodLinearly(tt.newPeriod), "ChangePeriodLinearly(%v)", tt.newPeriod)
+		})
+	}
+}
