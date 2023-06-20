@@ -280,6 +280,13 @@ func (a Money) Min(other Money) Money {
 	return other
 }
 
+func (a Money) Max(other Money) Money {
+	if a.IsGreaterThan(other) {
+		return a
+	}
+	return other
+}
+
 func (a Money) Negated() Money {
 	return Money{
 		amount:   -a.amount,
