@@ -244,8 +244,14 @@ func (a Money) LessThan(amount Money) bool {
 	return calc
 }
 
-func (a Money) IsLessThanEqual(line Money) bool {
-	return a.Cmp(line) <= 0
+// IsLessThanEqual is an alias for IsLessThanOrEqual
+// Deprecated: Use IsLessThanOrEqual instead
+func (a Money) IsLessThanEqual(amount Money) bool {
+	return a.IsLessThanOrEqual(amount)
+}
+
+func (a Money) IsLessThanOrEqual(amount Money) bool {
+	return a.Cmp(amount) <= 0
 }
 
 func (a Money) Number() float64 {
@@ -259,8 +265,12 @@ func (a Money) CheckSameCurrency(other Money) error {
 	return a.assertSameCurrency(other)
 }
 
-func (a Money) IsGreaterThan(zero Money) bool {
-	return a.Cmp(zero) > 0
+func (a Money) IsGreaterThan(other Money) bool {
+	return a.Cmp(other) > 0
+}
+
+func (a Money) IsGreaterThanOrEqual(other Money) bool {
+	return a.Cmp(other) >= 0
 }
 
 func (a Money) Min(other Money) Money {

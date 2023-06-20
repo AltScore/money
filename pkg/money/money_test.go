@@ -685,3 +685,64 @@ func TestMoney_TryAdd(t *testing.T) {
 		})
 	}
 }
+
+func TestMoney_IsGreaterThanOrEqual(t *testing.T) {
+	tests := []struct {
+		name   string
+		amount Money
+		other  Money
+		want   bool
+	}{
+		{
+			name:   "1.00 >= 1.00",
+			amount: MustParse("1.00", "MXN"),
+			other:  MustParse("1.00", "MXN"),
+			want:   true,
+		},
+		{
+			name:   "1.00 >= 0.00",
+			amount: MustParse("1.00", "MXN"),
+			other:  MustParse("0.00", "MXN"),
+			want:   true,
+		},
+		{
+			name:   "0.00 >= 1.00",
+			amount: MustParse("0.00", "MXN"),
+			other:  MustParse("1.00", "MXN"),
+			want:   false,
+		},
+		{
+			name:   "0.00 >= 0.00",
+			amount: MustParse("0.00", "MXN"),
+			other:  MustParse("0.00", "MXN"),
+			want:   true,
+		},
+		{
+			name:   "0.00 >= empty",
+			amount: MustParse("0.00", "MXN"),
+			other:  Money{},
+			want:   true,
+		},
+		{
+			name:   "empty >= 0.00",
+			amount: Money{},
+			other:  MustParse("0.00", "MXN"),
+			want:   true,
+		},
+		{
+			name:   "empty >= empty",
+			amount: Money{},
+			other:  Money{},
+			want:   true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			a := Money{
+				amount:   tt.amount.amount,
+				currency: tt.amount.currency,
+			}
+			assert.Equalf(t, tt.want, a.IsGreaterThanOrEqual(tt.other), "IsGreaterThanOrEqual(%v)", tt.other)
+		})
+	}
+}
