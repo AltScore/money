@@ -746,3 +746,42 @@ func TestMoney_IsGreaterThanOrEqual(t *testing.T) {
 		})
 	}
 }
+
+func TestMoney_StepToZero(t *testing.T) {
+
+	tests := []struct {
+		name   string
+		amount Money
+		want   Money
+	}{
+		{
+			name:   "positive",
+			amount: MustParse("1.00", "MXN"),
+			want:   MustParse("1.00", "MXN"),
+		},
+		{
+			name:   "zero",
+			amount: MustParse("0.00", "MXN"),
+			want:   MustParse("0.00", "MXN"),
+		},
+		{
+			name:   "negative",
+			amount: MustParse("-0.01", "MXN"),
+			want:   MustParse("0.00", "MXN"),
+		},
+		{
+			name:   "big negative",
+			amount: MustParse("-23423.43", "MXN"),
+			want:   MustParse("0.00", "MXN"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			a := Money{
+				amount:   tt.amount.amount,
+				currency: tt.amount.currency,
+			}
+			assert.Equalf(t, tt.want, a.StepToZero(), "StepToZero()")
+		})
+	}
+}

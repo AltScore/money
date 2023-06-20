@@ -97,6 +97,8 @@ func (a Money) Add(b Money) Money {
 	}
 }
 
+// TryAdd sums the values including Zero
+// Returns error if currencies are not the same
 func (a Money) TryAdd(b Money) (Money, error) {
 	if a.IsZero() {
 		if b.currency == nil && b.amount == 0 {
@@ -120,14 +122,22 @@ func (a Money) TryAdd(b Money) (Money, error) {
 	}, nil
 }
 
+// Equal compares two Money values.
+// Returns true if a == b and false otherwise
+// Panics if currencies are not the same
 func (a Money) Equal(another Money) bool {
 	return a.amount == another.amount && a.currency.Equals(another.currency)
 }
 
+// TryEqual compares two Money values.
+// Returns true if a == b and false otherwise
+// Returns error if currencies are not the same
 func (a Money) TryEqual(another Money) (bool, error) {
 	return a.Equal(another), nil
 }
 
+// TrySub subtracts the values including Zero
+// Returns error if currencies are not the same
 func (a Money) TrySub(b Money) (Money, error) {
 	if b.IsZero() {
 		return a, nil
@@ -141,6 +151,7 @@ func (a Money) TrySub(b Money) (Money, error) {
 	}, a.assertSameCurrency(b)
 }
 
+// Sub subtracts the values including Zero
 func (a Money) Sub(b Money) Money {
 	if sub, err := a.TrySub(b); err != nil {
 		panic(err)
@@ -149,6 +160,7 @@ func (a Money) Sub(b Money) Money {
 	}
 }
 
+// Mul multiplies money and returns result
 func (a Money) Mul(multiplier int64) Money {
 	return Money{
 		amount:   a.amount * multiplier,
@@ -156,6 +168,7 @@ func (a Money) Mul(multiplier int64) Money {
 	}
 }
 
+// Div divides money and returns result without rounding
 func (a Money) Div(divider int64) Money {
 	return Money{
 		amount:   a.amount / divider,
@@ -163,6 +176,7 @@ func (a Money) Div(divider int64) Money {
 	}
 }
 
+// RoundedDiv divides money and rounds result using HalfEvenRounding
 func (a Money) RoundedDiv(divider int64) Money {
 	return Money{
 		amount:   utils.HalfEvenRounding(a.amount, divider),
@@ -170,6 +184,7 @@ func (a Money) RoundedDiv(divider int64) Money {
 	}
 }
 
+// CurrencyCode returns currency code of the Money
 func (a Money) CurrencyCode() string {
 	cur := a.currency
 	if cur == nil {
@@ -183,6 +198,9 @@ func (a Money) GetCurrencyCode() string {
 	return a.CurrencyCode()
 }
 
+// Cmp compares two Money values.
+// Returns -1 if a < b, 0 if a == b and 1 if a > b
+// Panics if currencies are not the same
 func (a Money) Cmp(b Money) int {
 	if cmp, err := a.TryCmp(b); err != nil {
 		panic(err)
@@ -191,6 +209,9 @@ func (a Money) Cmp(b Money) int {
 	}
 }
 
+// TryCmp compares two Money values.
+// Returns -1 if a < b, 0 if a == b and 1 if a > b
+// Returns error if currencies are not the same
 func (a Money) TryCmp(b Money) (int, error) {
 	if b.IsZero() {
 		return a.Sign(), nil
@@ -212,32 +233,40 @@ func (a Money) TryCmp(b Money) (int, error) {
 	}
 }
 
+// String implements fmt.Stringer
 func (a Money) String() string {
 	return a.currency.Format(a.amount)
 
 }
 
+// GoString implements fmt.GoStringer
 func (a Money) GoString() string {
 	return fmt.Sprintf("money.FromFloat64(%v, %q)", a.Number(), a.CurrencyCode())
 }
 
+// Amount returns the amount as a string
 func (a Money) Amount() string {
 	_, number := a.formatAsNumber()
 	return number
 }
 
+// IsZero returns true if the amount is zero
 func (a Money) IsZero() bool {
 	return a.amount == 0
 }
 
+// IsNegative returns true if the amount is less than zero
 func (a Money) IsNegative() bool {
 	return a.amount < 0
 }
 
+// IsPositive returns true if the amount is greater than zero
 func (a Money) IsPositive() bool {
 	return a.amount > 0
 }
 
+// LessThan is an alias for IsLessThan
+// Deprecated: Use IsLessThan instead
 func (a Money) LessThan(amount Money) bool {
 
 	calc := a.Cmp(amount) < 0
@@ -250,10 +279,12 @@ func (a Money) IsLessThanEqual(amount Money) bool {
 	return a.IsLessThanOrEqual(amount)
 }
 
+// IsLessThanOrEqual returns true if the amount is less than or equal to the other amount
 func (a Money) IsLessThanOrEqual(amount Money) bool {
 	return a.Cmp(amount) <= 0
 }
 
+// Number returns the amount as a float64
 func (a Money) Number() float64 {
 	if a.IsZero() {
 		return 0
@@ -261,18 +292,22 @@ func (a Money) Number() float64 {
 	return float64(a.amount) / math.Pow10(a.currency.Fraction)
 }
 
+// CheckSameCurrency returns an error if the other money is not the same currency
 func (a Money) CheckSameCurrency(other Money) error {
 	return a.assertSameCurrency(other)
 }
 
+// IsGreaterThan returns true if the amount is greater than the other amount
 func (a Money) IsGreaterThan(other Money) bool {
 	return a.Cmp(other) > 0
 }
 
+// IsGreaterThanOrEqual returns true if the amount is greater than or equal to the other amount
 func (a Money) IsGreaterThanOrEqual(other Money) bool {
 	return a.Cmp(other) >= 0
 }
 
+// Min returns the smaller of two Money values.
 func (a Money) Min(other Money) Money {
 	if a.LessThan(other) {
 		return a
@@ -280,6 +315,7 @@ func (a Money) Min(other Money) Money {
 	return other
 }
 
+// Max returns the larger of two Money values.
 func (a Money) Max(other Money) Money {
 	if a.IsGreaterThan(other) {
 		return a
@@ -287,6 +323,18 @@ func (a Money) Max(other Money) Money {
 	return other
 }
 
+// StepToZero returns zero if the amount is negative, otherwise returns the amount
+func (a Money) StepToZero() Money {
+	if a.IsNegative() {
+		return Money{
+			amount:   0,
+			currency: a.currency,
+		}
+	}
+	return a
+}
+
+// Negated returns the negated value of the money
 func (a Money) Negated() Money {
 	return Money{
 		amount:   -a.amount,
@@ -294,6 +342,11 @@ func (a Money) Negated() Money {
 	}
 }
 
+// Sign returns:
+//
+//	 1 if the amount is positive
+//	 0 if the amount is zero
+//	-1 if the amount is negative
 func (a Money) Sign() int {
 	if a.IsPositive() {
 		return 1
@@ -322,6 +375,7 @@ func (m Money) formatAsNumber() (string, string) { // make
 	return c.Code, amountStr
 }
 
+// MustAdd panics if the two currencies are not the same currency
 func MustAdd(a, b Money) Money {
 	return a.Add(b)
 }
