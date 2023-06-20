@@ -18,13 +18,6 @@ func Test_Currency_can_be_copied(t *testing.T) {
 	assert.Equal(t, a.Number(), b.Number())
 }
 
-func TestMoney_LessThan(t *testing.T) {
-	a := MustParse("100.00", "MXN")
-	b := MustParse("200.00", "MXN")
-	assert.True(t, a.LessThan(b))
-	assert.False(t, b.LessThan(a))
-}
-
 func TestMoney_TryCmp(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -782,6 +775,82 @@ func TestMoney_StepToZero(t *testing.T) {
 				currency: tt.amount.currency,
 			}
 			assert.Equalf(t, tt.want, a.StepToZero(), "StepToZero()")
+		})
+	}
+}
+
+func TestMoney_IsLessThan1(t *testing.T) {
+
+	tests := []struct {
+		name   string
+		amount Money
+		other  Money
+		want   bool
+	}{
+		{
+			name:   "positive > positive",
+			amount: MustParse("1.00", "MXN"),
+			other:  MustParse("0.42", "MXN"),
+			want:   false,
+		},
+		{
+			name:   "positive > zero",
+			amount: MustParse("1.00", "MXN"),
+			other:  MustParse("0.00", "MXN"),
+			want:   false,
+		},
+		{
+			name:   "positive > negative",
+			amount: MustParse("1.00", "MXN"),
+			other:  MustParse("-77.42", "MXN"),
+			want:   false,
+		},
+		{
+			name:   "zero > positive",
+			amount: MustParse("0.00", "MXN"),
+			other:  MustParse("1.00", "MXN"),
+			want:   true,
+		},
+		{
+			name:   "zero > zero",
+			amount: MustParse("0.00", "MXN"),
+			other:  MustParse("0.00", "MXN"),
+			want:   false,
+		},
+		{
+			name:   "zero > negative",
+			amount: MustParse("0.00", "MXN"),
+			other:  MustParse("-77.42", "MXN"),
+			want:   false,
+		},
+		{
+			name:   "negative > positive",
+			amount: MustParse("-77.42", "MXN"),
+			other:  MustParse("1.00", "MXN"),
+			want:   true,
+		},
+		{
+			name:   "negative > zero",
+			amount: MustParse("-77.42", "MXN"),
+			other:  MustParse("0.00", "MXN"),
+			want:   true,
+		},
+		{
+			name:   "negative = negative",
+			amount: MustParse("-77.42", "MXN"),
+			other:  MustParse("-77.42", "MXN"),
+			want:   false,
+		},
+		{
+			name:   "negative > negative",
+			amount: MustParse("-64.27", "MXN"),
+			other:  MustParse("-77.42", "MXN"),
+			want:   false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, tt.amount.IsLessThan(tt.other), "IsLessThan(%v)", tt.amount)
 		})
 	}
 }

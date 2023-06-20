@@ -194,9 +194,7 @@ func (a Money) CurrencyCode() string {
 }
 
 // GetCurrencyCode required for Money to implement CommonTypeMoney
-func (a Money) GetCurrencyCode() string {
-	return a.CurrencyCode()
-}
+func (a Money) GetCurrencyCode() string { return a.CurrencyCode() }
 
 // Cmp compares two Money values.
 // Returns -1 if a < b, 0 if a == b and 1 if a > b
@@ -236,7 +234,6 @@ func (a Money) TryCmp(b Money) (int, error) {
 // String implements fmt.Stringer
 func (a Money) String() string {
 	return a.currency.Format(a.amount)
-
 }
 
 // GoString implements fmt.GoStringer
@@ -251,38 +248,27 @@ func (a Money) Amount() string {
 }
 
 // IsZero returns true if the amount is zero
-func (a Money) IsZero() bool {
-	return a.amount == 0
-}
+func (a Money) IsZero() bool { return a.amount == 0 }
 
 // IsNegative returns true if the amount is less than zero
-func (a Money) IsNegative() bool {
-	return a.amount < 0
-}
+func (a Money) IsNegative() bool { return a.amount < 0 }
 
 // IsPositive returns true if the amount is greater than zero
-func (a Money) IsPositive() bool {
-	return a.amount > 0
-}
+func (a Money) IsPositive() bool { return a.amount > 0 }
 
 // LessThan is an alias for IsLessThan
 // Deprecated: Use IsLessThan instead
-func (a Money) LessThan(amount Money) bool {
+func (a Money) LessThan(amount Money) bool { return a.IsLessThan(amount) }
 
-	calc := a.Cmp(amount) < 0
-	return calc
-}
+// IsLessThan is an alias for IsLessThan
+func (a Money) IsLessThan(amount Money) bool { return a.Cmp(amount) < 0 }
 
 // IsLessThanEqual is an alias for IsLessThanOrEqual
 // Deprecated: Use IsLessThanOrEqual instead
-func (a Money) IsLessThanEqual(amount Money) bool {
-	return a.IsLessThanOrEqual(amount)
-}
+func (a Money) IsLessThanEqual(amount Money) bool { return a.IsLessThanOrEqual(amount) }
 
 // IsLessThanOrEqual returns true if the amount is less than or equal to the other amount
-func (a Money) IsLessThanOrEqual(amount Money) bool {
-	return a.Cmp(amount) <= 0
-}
+func (a Money) IsLessThanOrEqual(amount Money) bool { return a.Cmp(amount) <= 0 }
 
 // Number returns the amount as a float64
 func (a Money) Number() float64 {
@@ -293,23 +279,17 @@ func (a Money) Number() float64 {
 }
 
 // CheckSameCurrency returns an error if the other money is not the same currency
-func (a Money) CheckSameCurrency(other Money) error {
-	return a.assertSameCurrency(other)
-}
+func (a Money) CheckSameCurrency(other Money) error { return a.assertSameCurrency(other) }
 
 // IsGreaterThan returns true if the amount is greater than the other amount
-func (a Money) IsGreaterThan(other Money) bool {
-	return a.Cmp(other) > 0
-}
+func (a Money) IsGreaterThan(other Money) bool { return a.Cmp(other) > 0 }
 
 // IsGreaterThanOrEqual returns true if the amount is greater than or equal to the other amount
-func (a Money) IsGreaterThanOrEqual(other Money) bool {
-	return a.Cmp(other) >= 0
-}
+func (a Money) IsGreaterThanOrEqual(other Money) bool { return a.Cmp(other) >= 0 }
 
 // Min returns the smaller of two Money values.
 func (a Money) Min(other Money) Money {
-	if a.LessThan(other) {
+	if a.IsLessThan(other) {
 		return a
 	}
 	return other
@@ -323,7 +303,8 @@ func (a Money) Max(other Money) Money {
 	return other
 }
 
-// StepToZero returns zero if the amount is negative, otherwise returns the amount
+// StepToZero returns zero if the amount is negative, otherwise returns the amount.
+// It correspond to the Step function.
 func (a Money) StepToZero() Money {
 	if a.IsNegative() {
 		return Money{
@@ -376,9 +357,7 @@ func (m Money) formatAsNumber() (string, string) { // make
 }
 
 // MustAdd panics if the two currencies are not the same currency
-func MustAdd(a, b Money) Money {
-	return a.Add(b)
-}
+func MustAdd(a, b Money) Money { return a.Add(b) }
 
 type scale struct {
 	Int   int64
