@@ -337,6 +337,13 @@ func (a Money) Sign() int {
 	return -1
 }
 
+func (m Money) Zero() Money {
+	return Money{
+		amount:   0,
+		currency: m.currency,
+	}
+}
+
 func (m Money) formatAsNumber() (string, string) { // make
 	c := m.currency
 

@@ -854,3 +854,31 @@ func TestMoney_IsLessThan1(t *testing.T) {
 		})
 	}
 }
+
+// Test for the Zero() method, returns the money with 0 amount
+
+func TestMoney_Zero(t *testing.T) {
+
+	tests := []struct {
+		name string
+		mon  Money
+	}{
+		{
+			name: "zero",
+			mon:  MustParse("0.00", "MXN"),
+		},
+		{
+			name: "positive",
+			mon:  MustParse("1.00", "MXN"),
+		},
+		{
+			name: "negative",
+			mon:  MustParse("-1.00", "MXN"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, Zero(tt.mon.CurrencyCode()), tt.mon.Zero(), "Zero()")
+		})
+	}
+}
