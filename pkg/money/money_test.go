@@ -875,10 +875,57 @@ func TestMoney_Zero(t *testing.T) {
 			name: "negative",
 			mon:  MustParse("-1.00", "MXN"),
 		},
+		// different currenciews
+		{
+			name: "zero usd",
+			mon:  MustParse("0.00", "USD"),
+		},
+		{
+			name: "positive usd",
+			mon:  MustParse("1.00", "USD"),
+		},
+		{
+			name: "negative usd",
+			mon:  MustParse("-1.00", "USD"),
+		},
+		// empty currency
+		{
+			name: "zero empty",
+			mon:  MustParse("0.00", ""),
+		},
+		{
+			name: "positive empty",
+			mon:  MustParse("1.00", ""),
+		},
+		{
+			name: "negative empty",
+			mon:  MustParse("-1.00", ""),
+		},
+		// less than 1
+		{
+			name: "positive less than 1",
+			mon:  MustParse("0.42", "MXN"),
+		},
+		{
+			name: "negative less than 1",
+			mon:  MustParse("-0.42", "MXN"),
+		},
+		// much bigger than 1
+		{
+			name: "positive much bigger than 1",
+			mon:  MustParse("23423.42", "MXN"),
+		},
+		{
+			name: "negative much bigger than 1",
+			mon:  MustParse("-23423.42", "KRW"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, Zero(tt.mon.CurrencyCode()), tt.mon.Zero(), "Zero()")
+			assert.Equalf(t, Money{
+				amount:   0,
+				currency: tt.mon.currency,
+			}, tt.mon.Zero(), "Zero()")
 		})
 	}
 }

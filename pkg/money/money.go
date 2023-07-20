@@ -337,6 +337,7 @@ func (a Money) Sign() int {
 	return -1
 }
 
+// Zero returns the zero-ed value of the money
 func (m Money) Zero() Money {
 	return Money{
 		amount:   0,
