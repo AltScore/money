@@ -516,3 +516,52 @@ func TestPercent_ChangePeriodLinearly(t *testing.T) {
 		})
 	}
 }
+
+func TestPercent_ChangePeriodLinearlyFrom(t *testing.T) {
+	type args struct {
+		fromPeriod uint
+		toPeriod   uint
+	}
+	tests := []struct {
+		name string
+		p    Percent
+		args args
+		want Percent
+	}{
+		{
+			name: "Zero percent",
+			p:    MustParse("0.00"),
+			args: args{fromPeriod: 1, toPeriod: 1},
+			want: MustParse("0.00"),
+		},
+		{
+			name: "Zero percent different periods",
+			p:    MustParse("0.00"),
+			args: args{fromPeriod: 1, toPeriod: 2},
+			want: MustParse("0.00"),
+		},
+		{
+			name: "some percent same period",
+			p:    MustParse("10.00"),
+			args: args{fromPeriod: 42, toPeriod: 42},
+			want: MustParse("10.00"),
+		},
+		{
+			name: "some percent annual to daily period",
+			p:    MustParse("75.00"),
+			args: args{fromPeriod: 360, toPeriod: 1},
+			want: MustParse("0.2083"),
+		},
+		{
+			name: "some percent annual to montly period",
+			p:    MustParse("75.00"),
+			args: args{fromPeriod: 360, toPeriod: 30},
+			want: MustParse("6.2500"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, tt.p.ChangePeriodLinearlyFrom(tt.args.fromPeriod, tt.args.toPeriod), "ChangePeriodLinearlyFrom(%v, %v)", tt.args.fromPeriod, tt.args.toPeriod)
+		})
+	}
+}

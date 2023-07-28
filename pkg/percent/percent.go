@@ -190,6 +190,19 @@ func (p Percent) ChangePeriodLinearly(period uint) Percent {
 	return FromFactor(rate)
 }
 
+// ChangePeriodLinearlyFrom converts a nominal interest rate to an interest rate for a given period.
+// It is calculated as a linear interpolation between the nominal rate and the
+// nominal rate for fromPeriod.
+func (p Percent) ChangePeriodLinearlyFrom(fromPeriod uint, toPeriod uint) Percent {
+	if toPeriod == fromPeriod {
+		return p
+	}
+
+	rate := p.Factor() * float64(toPeriod) / float64(fromPeriod)
+
+	return FromFactor(rate)
+}
+
 // GreaterThan returns true if this percent is greater than the other percent
 func (p Percent) GreaterThan(percent Percent) bool {
 	return p > percent
