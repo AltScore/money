@@ -250,6 +250,8 @@ func (a Money) Amount() string {
 // IsZero returns true if the amount is zero
 func (a Money) IsZero() bool { return a.amount == 0 }
 
+func (a Money) IsEmpty() bool { return a.amount == 0 && a.currency == nil }
+
 // IsNegative returns true if the amount is less than zero
 func (a Money) IsNegative() bool { return a.amount < 0 }
 

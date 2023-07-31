@@ -740,6 +740,55 @@ func TestMoney_IsGreaterThanOrEqual(t *testing.T) {
 	}
 }
 
+func TestMoney_IsEmpty(t *testing.T) {
+	type TestStruct struct {
+		TheMoney Money
+	}
+
+	tests := []struct {
+		name   string
+		amount Money
+		want   bool
+	}{
+		{
+			name:   "1.00 MXN is not empty",
+			amount: MustParse("1.00", "MXN"),
+			want:   false,
+		},
+		{
+			name:   "0.00 MXN is not empty",
+			amount: MustParse("0.00", "MXN"),
+			want:   false,
+		},
+		{
+			name:   "empty is empty",
+			amount: Money{},
+			want:   true,
+		},
+		{
+			name:   "missing from struct is empty",
+			amount: TestStruct{}.TheMoney,
+			want:   true,
+		},
+		{
+			name: "not missing from struct is not empty",
+			amount: TestStruct{
+				TheMoney: MustParse("1.00", "MXN"),
+			}.TheMoney,
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			a := Money{
+				amount:   tt.amount.amount,
+				currency: tt.amount.currency,
+			}
+			assert.Equalf(t, tt.want, a.IsEmpty(), "IsEmpty()")
+		})
+	}
+}
+
 func TestMoney_StepToZero(t *testing.T) {
 
 	tests := []struct {
