@@ -46,6 +46,9 @@ func GetOrDefault(currencyCode string) *Currency {
 }
 
 func (c *Currency) Equals(oc *Currency) bool {
+	if c == nil || oc == nil {
+		return c == oc
+	}
 	return c.Code == oc.Code
 }
 

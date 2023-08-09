@@ -929,3 +929,72 @@ func TestMoney_Zero(t *testing.T) {
 		})
 	}
 }
+
+func TestMoney_Equal(t *testing.T) {
+	tests := []struct {
+		name    string
+		amount  Money
+		another Money
+		want    bool
+	}{
+		{
+			name:    "positive = positive",
+			amount:  MustParse("1.00", "MXN"),
+			another: MustParse("1.00", "MXN"),
+			want:    true,
+		},
+		{
+			name:    "positive = zero",
+			amount:  MustParse("1.00", "MXN"),
+			another: MustParse("0.00", "MXN"),
+			want:    false,
+		},
+		{
+			name:    "positive = negative",
+			amount:  MustParse("1.00", "MXN"),
+			another: MustParse("-1.00", "MXN"),
+			want:    false,
+		},
+		{
+			name:    "zero = positive",
+			amount:  MustParse("0.00", "MXN"),
+			another: MustParse("1.00", "MXN"),
+			want:    false,
+		},
+		{
+			name:    "zero = zero",
+			amount:  MustParse("0.00", "MXN"),
+			another: MustParse("0.00", "MXN"),
+			want:    true,
+		},
+		{
+			name:    "zero different currencies",
+			amount:  MustParse("0.00", "MXN"),
+			another: MustParse("0.00", "USD"),
+			want:    false,
+		},
+		{
+			name:    "zero = empty",
+			amount:  MustParse("0.00", "MXN"),
+			another: Money{},
+			want:    true,
+		},
+		{
+			name:    "empty = zero",
+			amount:  Money{},
+			another: MustParse("0.00", "MXN"),
+			want:    true,
+		},
+		{
+			name:    "empty = empty",
+			amount:  Money{},
+			another: Money{},
+			want:    true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, tt.amount.Equal(tt.another), "Equal(%v)", tt.another)
+		})
+	}
+}

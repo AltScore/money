@@ -124,8 +124,22 @@ func (a Money) TryAdd(b Money) (Money, error) {
 
 // Equal compares two Money values.
 // Returns true if a == b and false otherwise
+// If values are zero, and at most one currency is specified, returns true
 // Panics if currencies are not the same
 func (a Money) Equal(another Money) bool {
+	if a.currency == nil || another.currency == nil {
+		// If one has no currency, check if amounts are 0. This is needed to compare empty values
+		return a.amount == 0 && another.amount == 0
+	}
+
+	return a.amount == another.amount && a.currency.Equals(another.currency)
+}
+
+// Same compares two Money values.
+// Returns true if a == b and false otherwise.
+// If values are zero, both currency should be equal or both nil.
+// Panics if currencies are not the same
+func (a Money) Same(another Money) bool {
 	return a.amount == another.amount && a.currency.Equals(another.currency)
 }
 
