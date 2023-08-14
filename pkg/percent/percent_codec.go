@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"reflect"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/bsoncodec"
 	"go.mongodb.org/mongo-driver/bson/bsonrw"
-	"go.mongodb.org/mongo-driver/bson/bsontype"
 )
 
-type BsonRegistryBuilder interface {
+type Registrant interface {
 	RegisterTypeEncoder(t reflect.Type, dec bsoncodec.ValueEncoder)
 	RegisterTypeDecoder(t reflect.Type, dec bsoncodec.ValueDecoder)
 }
@@ -24,13 +24,13 @@ var (
 
 	defaultPercentCodec = NewPercentCodec()
 
-	_ bsoncodec.ValueCodec   = defaultPercentCodec
+	_ bsoncodec.ValueEncoder = defaultPercentCodec
 	_ bsoncodec.ValueDecoder = defaultPercentCodec
 )
 
 // RegisterPercentBSONCodec register in the BSON registry a Codec to handle objects values of type percent.Percent
 // Prefer to use Register method
-func RegisterPercentBSONCodec(builder BsonRegistryBuilder) {
+func RegisterPercentBSONCodec(builder Registrant) {
 	codec := NewPercentCodec()
 
 	builder.RegisterTypeEncoder(codec.typeOf, codec)
@@ -44,7 +44,7 @@ func NewPercentCodec() *Codec {
 	}
 }
 
-func (pc *Codec) Register(registryBuilder *bsoncodec.RegistryBuilder) {
+func (pc *Codec) Register(registryBuilder Registrant) {
 	registryBuilder.RegisterTypeEncoder(pc.typeOf, pc)
 	registryBuilder.RegisterTypeDecoder(pc.typeOf, pc)
 }
@@ -61,7 +61,7 @@ func (pc *Codec) decodeType(_ bsoncodec.DecodeContext, vr bsonrw.ValueReader, t 
 
 	var percentVal Percent
 	switch vrType := vr.Type(); vrType {
-	case bsontype.String:
+	case bson.TypeString:
 		// assume strings are in the "9999.9999" format
 		percentStr, err := vr.ReadString()
 		if err != nil {
@@ -71,23 +71,23 @@ func (pc *Codec) decodeType(_ bsoncodec.DecodeContext, vr bsonrw.ValueReader, t 
 		if err != nil {
 			return emptyValue, err
 		}
-	case bsontype.Int64:
+	case bson.TypeInt64:
 		i64, err := vr.ReadInt64()
 		if err != nil {
 			return emptyValue, err
 		}
 		percentVal = Percent(i64)
-	case bsontype.Int32:
+	case bson.TypeInt32:
 		i32, err := vr.ReadInt32()
 		if err != nil {
 			return emptyValue, err
 		}
 		percentVal = Percent(i32)
-	case bsontype.Null:
+	case bson.TypeNull:
 		if err := vr.ReadNull(); err != nil {
 			return emptyValue, err
 		}
-	case bsontype.Undefined:
+	case bson.TypeUndefined:
 		if err := vr.ReadUndefined(); err != nil {
 			return emptyValue, err
 		}
