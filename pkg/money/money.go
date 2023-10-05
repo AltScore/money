@@ -370,12 +370,17 @@ func (m Money) formatAsNumber() (string, string) { // make
 		c = currency.GetOrDefault("")
 	}
 
-	formatter := *c
+	decimals := c.Fraction
 
-	formatter.Grapheme = "" // Remove grapheme
-	formatter.Thousand = "" // Remove thousand-separator
-	amountStr := formatter.Format(m.amount)
-	return c.Code, amountStr
+	s := strconv.FormatInt(m.amount, 10)
+
+	if len(s) <= decimals {
+		s = "0.0000000000000000"[0:decimals-len(s)+2] + s // Add leading zeros
+	} else {
+		s = s[:len(s)-decimals] + "." + s[len(s)-decimals:]
+	}
+
+	return c.Code, s
 }
 
 // MustAdd panics if the two currencies are not the same currency
