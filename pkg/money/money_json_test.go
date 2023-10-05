@@ -26,6 +26,15 @@ func Test_money_marshal_bg_number_shows_no_separators(t *testing.T) {
 	assert.Equal(t, `{"amount":"123456.78","currency":"MXN","display":"$123,456.78"}`, string(s))
 }
 
+func Test_money_marshall_in_ARS_shows_point_as_decimal_separator(t *testing.T) {
+
+	amount := FromFloat64(12.34, "ARS")
+
+	s, _ := json.Marshal(amount)
+
+	assert.Equal(t, `{"amount":"12.34","currency":"ARS","display":"$12,34"}`, string(s))
+}
+
 func Test_money_unmarshal(t *testing.T) {
 	moneyJson := `{"amount": "128.45", "currency": "ARS", "display":"$123,456.78" }`
 
@@ -61,6 +70,17 @@ func Test_money_unmarshal_struct(t *testing.T) {
 	_ = json.Unmarshal([]byte(moneyJson), &s)
 
 	assert.Equal(t, "$1,234.00", s.TotalAmount.String())
+}
+
+func Test_money_unmarshal_struct_using_ARS(t *testing.T) {
+	moneyJson := `{"totalAmount":{"amount":"1234.00","currency":"ARS"}}`
+
+	var s Invoice
+
+	_ = json.Unmarshal([]byte(moneyJson), &s)
+
+	assert.Equal(t, "$1.234,00", s.TotalAmount.String())
+	assert.Equal(t, "1234.00", s.TotalAmount.Amount())
 }
 
 func Test_money_unmarshal_struct_with_money_as_int_number(t *testing.T) {
@@ -135,4 +155,60 @@ func Test_money_unmarshall_money_and_pointers_to_money(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "$42.24", invoice.TotalAmount.String())
 	assert.Equal(t, "$7.45", invoice.Interest.String())
+}
+
+func TestMoney_MarshalJSON(t *testing.T) {
+	tests := []struct {
+		name string
+		m    Money
+		want string
+	}{
+		{
+			name: "zero",
+			m:    FromFloat64(0, "MXN"),
+			want: `{"amount":"0.00","currency":"MXN","display":"$0.00"}`,
+		},
+		{
+			name: "zero in ARS",
+			m:    FromFloat64(0, "ARS"),
+			want: `{"amount":"0.00","currency":"ARS","display":"$0,00"}`,
+		},
+		{
+			name: "cents",
+			m:    FromFloat64(0.01, "MXN"),
+			want: `{"amount":"0.01","currency":"MXN","display":"$0.01"}`,
+		},
+		{
+			name: "cents in ARS",
+			m:    FromFloat64(0.04, "ARS"),
+			want: `{"amount":"0.04","currency":"ARS","display":"$0,04"}`,
+		},
+		{
+			name: "dimes",
+			m:    FromFloat64(0.23, "MXN"),
+			want: `{"amount":"0.23","currency":"MXN","display":"$0.23"}`,
+		},
+		{
+			name: "dimes in ARS",
+			m:    FromFloat64(0.42, "ARS"),
+			want: `{"amount":"0.42","currency":"ARS","display":"$0,42"}`,
+		},
+		{
+			name: "with integral part",
+			m:    FromFloat64(123.23, "MXN"),
+			want: `{"amount":"123.23","currency":"MXN","display":"$123.23"}`,
+		},
+		{
+			name: "with integral part in ARS",
+			m:    FromFloat64(718.64, "ARS"),
+			want: `{"amount":"718.64","currency":"ARS","display":"$718,64"}`,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.m.MarshalJSON()
+			assert.NoError(t, err)
+			assert.Equalf(t, tt.want, string(got), "MarshalJSON()")
+		})
+	}
 }
