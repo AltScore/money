@@ -179,9 +179,19 @@ func TestMoney_MarshalJSON(t *testing.T) {
 			want: `{"amount":"0.01","currency":"MXN","display":"$0.01"}`,
 		},
 		{
+			name: "negative cents",
+			m:    FromFloat64(-0.01, "MXN"),
+			want: `{"amount":"-0.01","currency":"MXN","display":"-$0.01"}`,
+		},
+		{
 			name: "cents in ARS",
 			m:    FromFloat64(0.04, "ARS"),
 			want: `{"amount":"0.04","currency":"ARS","display":"$0,04"}`,
+		},
+		{
+			name: "negative cents in ARS",
+			m:    FromFloat64(-0.04, "ARS"),
+			want: `{"amount":"-0.04","currency":"ARS","display":"-$0,04"}`,
 		},
 		{
 			name: "dimes",

@@ -375,7 +375,15 @@ func (m Money) formatAsNumber() (string, string) { // make
 
 	decimals := c.Fraction
 
-	s := strconv.FormatInt(m.amount, 10)
+	isNegative := m.amount < 0
+	var absAmount int64
+	var s string
+	if isNegative {
+		absAmount = -m.amount
+	} else {
+		absAmount = m.amount
+	}
+	s = strconv.FormatInt(absAmount, 10)
 
 	if len(s) <= decimals {
 		s = "0.0000000000000000"[0:decimals-len(s)+2] + s // Add leading zeros
@@ -383,6 +391,9 @@ func (m Money) formatAsNumber() (string, string) { // make
 		s = s[:len(s)-decimals] + "." + s[len(s)-decimals:]
 	}
 
+	if isNegative {
+		return c.Code, "-" + s
+	}
 	return c.Code, s
 }
 
