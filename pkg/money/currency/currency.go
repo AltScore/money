@@ -3,6 +3,7 @@ package currency
 import (
 	// TODO remove this dependency
 
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -43,6 +44,19 @@ func GetOrDefault(currencyCode string) *Currency {
 	}
 
 	return currency
+}
+
+// IsValid returns true if the currency code is one of the registered currencies.
+func IsValid(currencyCode string) bool {
+	return Get(currencyCode) != nil
+}
+
+// Check returns an error if the currency code is not one of the registered currencies.
+func Check(currencyCode string) error {
+	if !IsValid(currencyCode) {
+		return fmt.Errorf("invalid currency code: %s", currencyCode)
+	}
+	return nil
 }
 
 func (c *Currency) Equals(oc *Currency) bool {
