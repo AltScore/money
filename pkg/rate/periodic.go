@@ -6,9 +6,11 @@ import (
 )
 
 const (
-	Week     = 7
-	Month    = 30
-	Year     = 360
+	Daily    = 1
+	Weekly   = 7
+	BiWeekly = 14
+	Monthly  = 30
+	Yearly   = 360
 	FullYear = 365
 )
 

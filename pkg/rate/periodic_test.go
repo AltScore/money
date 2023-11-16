@@ -19,19 +19,19 @@ func TestPeriodicRate_RoundedByWithPeriod(t *testing.T) {
 	}{
 		{
 			name: "1% per month",
-			rate: NewPeriodicRateFromInt(Month, 42),
+			rate: NewPeriodicRateFromInt(Monthly, 42),
 			args: args{
 				amount: money.FromFloat64(200, "ARS"),
-				period: Month,
+				period: Monthly,
 			},
 			want: money.FromFloat64(84, "ARS"),
 		},
 		{
 			name: "120% per year monthly",
-			rate: NewPeriodicRateFromFloat64(Year, 120.0),
+			rate: NewPeriodicRateFromFloat64(Yearly, 120.0),
 			args: args{
 				amount: money.FromFloat64(4000, "ARS"),
-				period: Month,
+				period: Monthly,
 			},
 			want: money.FromFloat64(400, "ARS"),
 		},
