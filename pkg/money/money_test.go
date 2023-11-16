@@ -1137,3 +1137,78 @@ func TestMoney_Amount(t *testing.T) {
 		})
 	}
 }
+
+func TestMoney_Amount1(t *testing.T) {
+
+	tests := []struct {
+		name  string
+		money Money
+		want  string
+	}{
+		{
+			name:  "positive",
+			money: MustParse("1.00", "MXN"),
+			want:  "1.00",
+		},
+		{
+			name:  "positive with tenths",
+			money: MustParse("19.8", "MXN"),
+			want:  "19.80",
+		},
+		{
+			name:  "positive with cents",
+			money: MustParse("657899.61", "MXN"),
+			want:  "657899.61",
+		},
+		{
+			name:  "big positive",
+			money: MustParse("6578996546548.61", "MXN"),
+			want:  "6578996546548.61",
+		},
+		{
+			name:  "small positive",
+			money: MustParse("0.01", "ARS"),
+			want:  "0.01",
+		},
+		{
+			name:  "small positive tenths",
+			money: MustParse("0.10", "ARS"),
+			want:  "0.10",
+		},
+		{
+			name:  "negative",
+			money: MustParse("-1.00", "MXN"),
+			want:  "-1.00",
+		},
+		{
+			name:  "negative with tenths",
+			money: MustParse("-19.8", "MXN"),
+			want:  "-19.80",
+		},
+		{
+			name:  "negative with cents",
+			money: MustParse("-657899.61", "MXN"),
+			want:  "-657899.61",
+		},
+		{
+			name:  "big negative",
+			money: MustParse("-6578996546548.61", "MXN"),
+			want:  "-6578996546548.61",
+		},
+		{
+			name:  "small negative",
+			money: MustParse("-0.01", "ARS"),
+			want:  "-0.01",
+		},
+		{
+			name:  "empty",
+			money: Money{},
+			want:  "0",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, tt.money.Amount(), "Amount()")
+		})
+	}
+}

@@ -164,6 +164,11 @@ func TestMoney_MarshalJSON(t *testing.T) {
 		want string
 	}{
 		{
+			name: "empty",
+			m:    Money{},
+			want: `{"amount":"0","currency":"?","display":"0"}`,
+		},
+		{
 			name: "zero",
 			m:    FromFloat64(0, "MXN"),
 			want: `{"amount":"0.00","currency":"MXN","display":"$0.00"}`,

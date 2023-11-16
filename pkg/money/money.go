@@ -387,7 +387,7 @@ func (m Money) formatAsNumber() (string, string) { // make
 
 	if len(s) <= decimals {
 		s = "0.0000000000000000"[0:decimals-len(s)+2] + s // Add leading zeros
-	} else {
+	} else if decimals > 0 {
 		s = s[:len(s)-decimals] + "." + s[len(s)-decimals:]
 	}
 
