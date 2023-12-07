@@ -125,15 +125,7 @@ func (a Money) TryAdd(b Money) (Money, error) {
 // Equal compares two Money values.
 // Returns true if a == b and false otherwise
 // If values are zero, and at most one currency is specified, returns true
-// Deprecated: Use Equals instead
 func (a Money) Equal(another Money) bool {
-	return a.Equals(another)
-}
-
-// Equals compares two Money values.
-// Returns true if a == b and false otherwise
-// If values are zero, and at most one currency is specified, returns true
-func (a Money) Equals(another Money) bool {
 	if a.currency == nil || another.currency == nil {
 		// If one has no currency, check if amounts are 0. This is needed to compare empty values
 		return a.amount == 0 && another.amount == 0
@@ -147,14 +139,14 @@ func (a Money) Equals(another Money) bool {
 // If values are zero, and at most one currency is specified, returns true
 // This is a synonym for Equals
 func (a Money) IsEqual(another Money) bool {
-	return a.Equals(another)
+	return a.Equal(another)
 }
 
 // IsNotEqual compares two Money values.
 // Returns true if a != b and false otherwise
 // If values are zero, and both currencies are specified, and they are different, returns true
 func (a Money) IsNotEqual(another Money) bool {
-	return !a.Equals(another)
+	return !a.Equal(another)
 }
 
 // Same compares two Money values.
@@ -169,14 +161,14 @@ func (a Money) Same(another Money) bool {
 // Returns error if currencies are not the same
 // Deprecated: Use TryEquals instead
 func (a Money) TryEqual(another Money) (bool, error) {
-	return a.Equals(another), nil
+	return a.Equal(another), nil
 }
 
 // TryEquals compares two Money values.
 // Returns true if a == b and false otherwise
 // Returns error if currencies are not the same
 func (a Money) TryEquals(another Money) (bool, error) {
-	return a.Equals(another), nil
+	return a.Equal(another), nil
 }
 
 // TrySub subtracts the values including Zero
