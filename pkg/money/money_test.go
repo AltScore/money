@@ -979,7 +979,7 @@ func TestMoney_Zero(t *testing.T) {
 	}
 }
 
-func TestMoney_Equal(t *testing.T) {
+func TestMoney_Equals(t *testing.T) {
 	tests := []struct {
 		name    string
 		amount  Money
@@ -1043,7 +1043,9 @@ func TestMoney_Equal(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, tt.amount.Equal(tt.another), "Equal(%v)", tt.another)
+			assert.Equalf(t, tt.want, tt.amount.Equals(tt.another), "Equals(%v)", tt.another)
+			assert.Equalf(t, tt.want, tt.amount.IsEqual(tt.another), "IsEqual(%v)", tt.another)
+			assert.Equalf(t, !tt.want, tt.amount.IsNotEqual(tt.another), "IsNotEqual(%v)", tt.another)
 		})
 	}
 }
