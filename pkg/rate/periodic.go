@@ -1,6 +1,7 @@
 package rate
 
 import (
+	"fmt"
 	"github.com/AltScore/money/pkg/money"
 	"github.com/AltScore/money/pkg/percent"
 )
@@ -58,4 +59,43 @@ func (r Periodic) RoundedBy(m money.Money) money.Money {
 //	periodicRate.NominalToPeriod(period).By(amount)
 func (r Periodic) RoundedByWithPeriod(amount money.Money, period uint) money.Money {
 	return amount.Mul(int64(r.Value) * int64(period)).RoundedDiv(percent.ScaledPercentToRate * int64(r.Period))
+}
+
+func (r Periodic) String() string {
+	return fmt.Sprintf("%s %s", r.Value, r.PeriodAsString())
+}
+
+func (r Periodic) PeriodAsString() string {
+	switch r.Period {
+	case Daily:
+		return "daily"
+	case Weekly:
+		return "weekly"
+	case BiWeekly:
+		return "biweekly"
+	case Monthly:
+		return "monthly"
+	case Yearly:
+		return "yearly"
+	case FullYear:
+		return "full year"
+	default:
+		return fmt.Sprintf("%d days", r.Period)
+	}
+}
+
+// Equal returns true if the other rate is equal to this rate.
+// Two rates are equal if they have the same period and value.
+func (r Periodic) Equal(other Periodic) bool {
+	return r.Period == other.Period && r.Value == other.Value
+}
+
+// IsZero returns true if the rate is zero.
+func (r Periodic) IsZero() bool {
+	return r.Value.IsZero()
+}
+
+// IsNonZero returns true if the rate is not zero.
+func (r Periodic) IsNonZero() bool {
+	return r.Value.IsNonZero()
 }

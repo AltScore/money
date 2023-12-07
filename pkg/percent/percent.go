@@ -81,11 +81,15 @@ func MustFromFraction(partial, total money.Money) Percent {
 	}
 }
 
+// Parse returns a Percent from the string value. The value is the percent, "1.0" == 1%
+// It returns an error if the string is not a valid percent.
 func Parse(pctStr string) (Percent, error) {
 	pct, err := parsers.ParseNumber(pctStr, Decimals)
 	return Percent(pct), err
 }
 
+// MustParse returns a Percent from the string value. The value is the percent, "1.0" == 1%
+// It panics if the string is not a valid percent.
 func MustParse(pctStr string) Percent {
 	if pct, err := Parse(pctStr); err != nil {
 		panic(err)
@@ -128,14 +132,27 @@ func (p Percent) ExtractRoundedPercentFromTotal(amount money.Money) money.Money 
 
 // func (p Percent) By(amount Money) (computed Money, remainder Money) {
 
+// IsZero returns true if this percent is zero
 func (p Percent) IsZero() bool {
 	return p == 0
 }
 
+// IsNonZero returns true if this percent is not zero
+func (p Percent) IsNonZero() bool {
+	return p != 0
+}
+
+// Equal returns true if this percent is equal to the other percent
 func (p Percent) Equal(other Percent) bool {
 	return p == other
 }
 
+// NotEqual returns true if this percent is not equal to the other percent
+func (p Percent) NotEqual(other Percent) bool {
+	return p != other
+}
+
+// String returns the string representation of this percent
 func (p Percent) String() string {
 	number := parsers.FormatNumber(int64(p), Decimals)
 	return removeDecimals(number)
