@@ -43,7 +43,14 @@ func (a *Money) UnmarshalJSON(b []byte) error {
 func jsonExtractAmount(data map[string]interface{}, currencyCode string) (int64, error) {
 	amountRaw, ok := data["amount"]
 	if !ok {
-		return 0, ErrorInvalidAmount
+		return 0, ErrorMissingAmount
+	}
+
+	if _, ok := amountRaw.(string); ok {
+		err := IsValidAmount(amountRaw.(string))
+		if err != nil {
+			return 0, err
+		}
 	}
 
 	currency := currency2.GetOrDefault(currencyCode)
@@ -53,7 +60,7 @@ func jsonExtractAmount(data map[string]interface{}, currencyCode string) (int64,
 		amount, err := parsers.ParseNumber(amountStr, currency.Fraction)
 
 		if err != nil {
-			return 0, ErrInvalidJSONUnmarshal
+			return 0, ErrorInvalidAmountString
 		}
 
 		return amount, nil
@@ -62,7 +69,7 @@ func jsonExtractAmount(data map[string]interface{}, currencyCode string) (int64,
 	// It is expressed as a number
 	amountFloat, ok := amountRaw.(float64)
 	if !ok {
-		return 0, ErrInvalidJSONUnmarshal
+		return 0, ErrorInvalidAmountFloat
 	}
 
 	return float2EquivalentInt(amountFloat, currency), nil
@@ -70,9 +77,11 @@ func jsonExtractAmount(data map[string]interface{}, currencyCode string) (int64,
 
 func jsonExtractCurrency(data map[string]interface{}) (string, error) {
 	if currencyRaw, ok := data["currency"]; !ok {
-		return "", ErrorInvalidCurrency
+		return "", ErrorMissingCurrency
 	} else if currencyCode, ok := currencyRaw.(string); !ok {
-		return "", ErrInvalidJSONUnmarshal
+		return "", ErrorInvalidCurrency
+	} else if err := currency2.Check(currencyCode); err != nil {
+		return "", err
 	} else {
 		return currencyCode, nil
 	}
