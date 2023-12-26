@@ -16,6 +16,8 @@ import (
 
 var (
 	ErrInvalidJSONUnmarshal = errors.New("invalid json unmarshal")
+	ErrorInvalidAmount      = errors.New("invalid amount")
+	ErrorInvalidCurrency    = errors.New("invalid currency")
 )
 
 type Money struct {

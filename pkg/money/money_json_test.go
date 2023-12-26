@@ -227,3 +227,77 @@ func TestMoney_MarshalJSON(t *testing.T) {
 		})
 	}
 }
+
+func TestMoney_UnmarshalJSON(t *testing.T) {
+	tests := []struct {
+		name    string
+		data    []byte
+		want    Money
+		wantErr bool
+	}{
+		{
+			name:    "empty",
+			data:    []byte(`{}`),
+			wantErr: true,
+		},
+		{
+			name:    "missing amount",
+			data:    []byte(`{"currency":"MXN"}`),
+			wantErr: true,
+		},
+		{
+			name:    "missing currency",
+			data:    []byte(`{"amount":"123.45"}`),
+			wantErr: true,
+		},
+		{
+			name:    "zero",
+			data:    []byte(`{"amount":"0.00","currency":"MXN","display":"$0.00"}`),
+			want:    FromFloat64(0, "MXN"),
+			wantErr: false,
+		},
+		{
+			name:    "zero in ARS",
+			data:    []byte(`{"amount":"0.00","currency":"ARS","display":"$0,00"}`),
+			want:    FromFloat64(0, "ARS"),
+			wantErr: false,
+		},
+		{
+			name:    "cents",
+			data:    []byte(`{"amount":"0.01","currency":"MXN","display":"$0.01"}`),
+			want:    FromFloat64(0.01, "MXN"),
+			wantErr: false,
+		},
+		{
+			name:    "negative cents",
+			data:    []byte(`{"amount":"-0.01","currency":"MXN","display":"-$0.01"}`),
+			want:    FromFloat64(-0.01, "MXN"),
+			wantErr: false,
+		},
+		{
+			name:    "cents in ARS",
+			data:    []byte(`{"amount":"0.04","currency":"ARS","display":"$0,04"}`),
+			want:    FromFloat64(0.04, "ARS"),
+			wantErr: false,
+		},
+		{
+			name:    "negative cents in ARS",
+			data:    []byte(`{"amount":"-0.04","currency":"ARS","display":"-$0,04"}`),
+			want:    FromFloat64(-0.04, "ARS"),
+			wantErr: false,
+		},
+		{
+			name: "dimes",
+			data: []byte(`{"amount":"0.23","currency":"MXN","display":"$0.23"}`),
+			want: FromFloat64(0.23, "MXN"),
+		}}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var got Money
+			if err := got.UnmarshalJSON(tt.data); (err != nil) != tt.wantErr {
+				t.Errorf("Money.UnmarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}

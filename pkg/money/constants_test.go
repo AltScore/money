@@ -47,6 +47,11 @@ func TestIsValidAmount(t *testing.T) {
 			value:   "123.42 ",
 			wantErr: assert.Error,
 		},
+		{
+			name:    "invalid amount empty string",
+			value:   "",
+			wantErr: assert.Error,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
