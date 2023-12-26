@@ -98,6 +98,21 @@ func MustParse(pctStr string) Percent {
 	}
 }
 
+// Add returns the sum of this percent and the other percent
+func (p Percent) Add(p2 Percent) Percent {
+	return p + p2
+}
+
+// Sub returns the difference of this percent and the other percent
+func (p Percent) Sub(p2 Percent) Percent {
+	return p - p2
+}
+
+// AddOne returns the sum of this percent and 100%
+func (p Percent) AddOne() Percent {
+	return p + 100*Scale
+}
+
 // By multiplies the given amount by this percent and returns the result amount.
 // It does not round the result.
 func (p Percent) By(amount money.Money) money.Money {

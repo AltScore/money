@@ -565,3 +565,93 @@ func TestPercent_ChangePeriodLinearlyFrom(t *testing.T) {
 		})
 	}
 }
+
+func TestPercent_Add(t *testing.T) {
+	tests := []struct {
+		name string
+		p    Percent
+		p2   Percent
+		want Percent
+	}{
+		{
+			name: "Zero",
+			p:    MustParse("0.00"),
+			p2:   MustParse("0.00"),
+			want: MustParse("0.00"),
+		},
+		{
+			name: "Zero + 10%",
+			p:    MustParse("0.00"),
+			p2:   MustParse("10.00"),
+			want: MustParse("10.00"),
+		},
+		{
+			name: "10% + 10%",
+			p:    MustParse("10.00"),
+			p2:   MustParse("40.00"),
+			want: MustParse("50.00"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, tt.p.Add(tt.p2), "Add(%v)", tt.p2)
+		})
+	}
+}
+
+func TestPercent_Sub(t *testing.T) {
+	tests := []struct {
+		name string
+		p    Percent
+		p2   Percent
+		want Percent
+	}{
+		{
+			name: "Zero",
+			p:    MustParse("0.00"),
+			p2:   MustParse("0.00"),
+			want: MustParse("0.00"),
+		},
+		{
+			name: "Zero - 10%",
+			p:    MustParse("0.00"),
+			p2:   MustParse("10.00"),
+			want: MustParse("-10.00"),
+		},
+		{
+			name: "10% - 40%",
+			p:    MustParse("10.00"),
+			p2:   MustParse("40.00"),
+			want: MustParse("-30.00"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, tt.p.Sub(tt.p2), "Sub(%v)", tt.p2)
+		})
+	}
+}
+
+func TestPercent_AddOne(t *testing.T) {
+	tests := []struct {
+		name string
+		p    Percent
+		want Percent
+	}{
+		{
+			name: "Zero",
+			p:    MustParse("0.00"),
+			want: MustParse("100.00"),
+		},
+		{
+			name: "10%",
+			p:    MustParse("10.00"),
+			want: MustParse("110.00"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, tt.p.AddOne(), "AddOne()")
+		})
+	}
+}
