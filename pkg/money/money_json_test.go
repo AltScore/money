@@ -251,7 +251,7 @@ func TestMoney_UnmarshalJSON(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name:    "invalid amount two decimal places",
+			name:    "invalid amount two decimal points",
 			data:    `{"amount":"123.45.67","currency":"MXN"}`,
 			wantErr: true,
 		},
