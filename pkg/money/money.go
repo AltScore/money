@@ -15,7 +15,12 @@ import (
 )
 
 var (
-	ErrInvalidJSONUnmarshal = errors.New("invalid json unmarshal")
+	ErrInvalidJSONUnmarshal  = errors.New("invalid json unmarshal")
+	ErrorInvalidAmountString = errors.New("invalid string amount")
+	ErrorInvalidAmountFloat  = errors.New("invalid float amount")
+	ErrorInvalidCurrency     = errors.New("invalid currency")
+	ErrorMissingAmount       = errors.New("missing amount")
+	ErrorMissingCurrency     = errors.New("missing currency")
 )
 
 type Money struct {
