@@ -6,12 +6,12 @@ import (
 )
 
 const (
-	AmountAsStringFormat = `^\d+(\.\d+)?$`
+	AmountAsStringFormat = `^(?:-)?\d+(\.\d+)?$`
 )
 
 var AmountAsStringRegexp = regexp.MustCompile(AmountAsStringFormat)
 
-// IsValidAmount returns no error if the amount is valid, an error if it is not.
+// IsValidAmount returns no error if the amount is valid (positive or negative), an error if it is not.
 func IsValidAmount(value string) error {
 	if AmountAsStringRegexp.MatchString(value) {
 		return nil

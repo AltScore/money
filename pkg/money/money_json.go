@@ -46,13 +46,6 @@ func jsonExtractAmount(data map[string]interface{}, currencyCode string) (int64,
 		return 0, ErrorMissingAmount
 	}
 
-	if _, ok := amountRaw.(string); ok {
-		err := IsValidAmount(amountRaw.(string))
-		if err != nil {
-			return 0, err
-		}
-	}
-
 	currency := currency2.GetOrDefault(currencyCode)
 
 	if amountStr, ok := amountRaw.(string); ok {
@@ -80,6 +73,8 @@ func jsonExtractCurrency(data map[string]interface{}) (string, error) {
 		return "", ErrorMissingCurrency
 	} else if currencyCode, ok := currencyRaw.(string); !ok {
 		return "", ErrorInvalidCurrency
+	} else if currencyCode == "?" || currencyCode == "" {
+		return "", nil
 	} else if err := currency2.Check(currencyCode); err != nil {
 		return "", err
 	} else {

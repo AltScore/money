@@ -23,6 +23,11 @@ func TestIsValidAmount(t *testing.T) {
 			wantErr: assert.NoError,
 		},
 		{
+			name:    "valid negative amount with decimal point",
+			value:   "-4242.42",
+			wantErr: assert.NoError,
+		},
+		{
 			name:    "invalid amount with decimal point",
 			value:   "123.4.2",
 			wantErr: assert.Error,

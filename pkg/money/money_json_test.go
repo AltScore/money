@@ -236,9 +236,24 @@ func TestMoney_UnmarshalJSON(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "empty",
+			name:    "missing fields",
 			data:    `{}`,
 			wantErr: true,
+		},
+		{
+			name: "zero empty",
+			data: `{"amount":"0","currency":""}`,
+			want: Money{},
+		},
+		{
+			name: "zero with currency",
+			data: `{"amount":"0","currency":"ARS"}`,
+			want: NewFromInt(0, "ARS"),
+		},
+		{
+			name: "empty with question mark",
+			data: `{"amount":"0","currency":"?"}`,
+			want: Money{},
 		},
 		{
 			name:    "missing amount",
@@ -252,6 +267,11 @@ func TestMoney_UnmarshalJSON(t *testing.T) {
 		},
 		{
 			name:    "invalid amount two decimal points",
+			data:    `{"amount":"123.4.67","currency":"MXN"}`,
+			wantErr: true,
+		},
+		{
+			name:    "invalid amount second decimal point after decimals",
 			data:    `{"amount":"123.45.67","currency":"MXN"}`,
 			wantErr: true,
 		},
@@ -268,6 +288,11 @@ func TestMoney_UnmarshalJSON(t *testing.T) {
 		{
 			name:    "invalid currency",
 			data:    `{"amount":"123.45","currency":"MNX"}`,
+			wantErr: true,
+		},
+		{
+			name:    "invalid currency",
+			data:    `{"amount":"123.45","currency":"MX"}`,
 			wantErr: true,
 		},
 		{
@@ -296,23 +321,26 @@ func TestMoney_UnmarshalJSON(t *testing.T) {
 			want: FromFloat64(0.04, "ARS"),
 		},
 		{
-			name:    "negative amount",
-			data:    `{"amount":"-123.45","currency":"MXN"}`,
-			wantErr: true,
+			name: "negative amount",
+			data: `{"amount":"-123.45","currency":"MXN"}`,
+			want: FromFloat64(-123.45, "MXN"),
 		},
 		{
-			name:    "negative cents",
-			data:    `{"amount":"-0.01","currency":"MXN"}`,
-			wantErr: true,
+			name: "negative cents",
+			data: `{"amount":"-0.01","currency":"MXN"}`,
+			want: FromFloat64(-0.01, "MXN"),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			var got Money
-			if err := got.UnmarshalJSON([]byte(tt.data)); (err != nil) != tt.wantErr {
-				t.Errorf("Money.UnmarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
+			a := &Money{}
+			err := a.UnmarshalJSON([]byte(tt.data))
+			if tt.wantErr {
+				assert.Error(t, err, fmt.Sprintf("UnmarshalJSON(%v)", tt.data))
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.want, *a)
 			}
-			assert.Equal(t, tt.want, got)
 		})
 	}
 }

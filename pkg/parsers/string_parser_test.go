@@ -26,22 +26,18 @@ func Test_parseAmount(t *testing.T) {
 		{name: "float, too any digits", args: args{"1.2345", 2}, want: 123, wantErr: ""},
 		{name: "negative float, too any digits", args: args{"-1.2345", 2}, want: -123, wantErr: ""},
 		{name: "erroneous value", args: args{"-123X45", 2}, want: 0, wantErr: "invalid syntax"},
-		{name: "ignore characters in excess decimals", args: args{"-1.23X45", 2}, want: -123, wantErr: ""},
+		{name: "invalid characters in excess decimals", args: args{"-1.23X45", 2}, want: -123, wantErr: "invalid syntax"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := ParseNumber(tt.args.s, tt.args.decimals)
 
-			if tt.wantErr == "" {
-				if !assert.Nil(t, err) {
-					return
-				}
+			if tt.wantErr != "" {
+				assert.ErrorContains(t, err, tt.wantErr)
 			} else {
-				if !assert.ErrorContains(t, err, tt.wantErr) {
-					return
-				}
+				assert.NoError(t, err)
+				assert.Equalf(t, tt.want, got, "ParseNumber(%v, %v)", tt.args.s, tt.args.decimals)
 			}
-			assert.Equalf(t, tt.want, got, "ParseNumber(%v, %v)", tt.args.s, tt.args.decimals)
 		})
 	}
 }

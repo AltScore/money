@@ -23,7 +23,13 @@ func ParseNumber(s string, decimals int) (int64, error) {
 			digits = decimals
 		}
 
-		toParse = s[:dotPos] + s[dotPos+1:dotPos+1+digits]
+		firstDigitOutsidePrecision := dotPos + 1 + digits
+		toParse = s[:dotPos] + s[dotPos+1:firstDigitOutsidePrecision]
+
+		if firstDigitOutsidePrecision < len(s) && !ArrAllDigits(s[firstDigitOutsidePrecision:]) {
+			// If there are invalid characters after the precision, return an error
+			return 0, &strconv.NumError{Func: "ParseNumber", Num: s, Err: strconv.ErrSyntax}
+		}
 	}
 
 	value, err := strconv.ParseInt(toParse, 10, 64)
@@ -37,4 +43,14 @@ func ParseNumber(s string, decimals int) (int64, error) {
 	}
 
 	return value, nil
+}
+
+func ArrAllDigits(s string) bool {
+	for _, c := range s {
+		if c < '0' || c > '9' {
+			return false
+		}
+	}
+
+	return true
 }
