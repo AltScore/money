@@ -1214,3 +1214,42 @@ func TestMoney_Amount1(t *testing.T) {
 		})
 	}
 }
+
+func TestMoney_By(t *testing.T) {
+	tests := []struct {
+		name       string
+		money      Money
+		multiplier float64
+		want       Money
+	}{
+		{
+			name:       "positive",
+			money:      MustParse("1.00", "MXN"),
+			multiplier: 2.0,
+			want:       MustParse("2.00", "MXN"),
+		},
+		{
+			name:       "negative",
+			money:      MustParse("-1.00", "MXN"),
+			multiplier: 2.0,
+			want:       MustParse("-2.00", "MXN"),
+		},
+		{
+			name:       "zero",
+			money:      MustParse("0.00", "MXN"),
+			multiplier: 2.0,
+			want:       MustParse("0.00", "MXN"),
+		},
+		{
+			name:       "Big positive",
+			money:      MustParse("649857.61", "MXN"),
+			multiplier: 14.364548789,
+			want:       MustParse("9334911.34", "MXN"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, tt.money.By(tt.multiplier), "By(%v)", tt.multiplier)
+		})
+	}
+}

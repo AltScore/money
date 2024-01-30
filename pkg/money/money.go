@@ -200,6 +200,15 @@ func (a Money) Sub(b Money) Money {
 	}
 }
 
+// By multiplies money by a floating number and returns result.
+// It does not round the result.
+func (a Money) By(multiplier float64) Money {
+	return Money{
+		amount:   int64(float64(a.amount) * multiplier),
+		currency: a.currency,
+	}
+}
+
 // Mul multiplies money and returns result
 func (a Money) Mul(multiplier int64) Money {
 	return Money{
@@ -347,7 +356,7 @@ func (a Money) Max(other Money) Money {
 }
 
 // StepToZero returns zero if the amount is negative, otherwise returns the amount.
-// It correspond to the Step function.
+// It corresponds to the Step function.
 func (a Money) StepToZero() Money {
 	if a.IsNegative() {
 		return Money{
