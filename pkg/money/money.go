@@ -209,6 +209,15 @@ func (a Money) By(multiplier float64) Money {
 	}
 }
 
+// RoundedBy multiplies money by a floating number and returns result.
+// It does round the result.
+func (a Money) RoundedBy(multiplier float64) Money {
+	return Money{
+		amount:   utils.HalfEvenRounding(int64(float64(a.amount*10)*multiplier), 10),
+		currency: a.currency,
+	}
+}
+
 // Mul multiplies money and returns result
 func (a Money) Mul(multiplier int64) Money {
 	return Money{

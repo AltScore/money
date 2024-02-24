@@ -1253,3 +1253,105 @@ func TestMoney_By(t *testing.T) {
 		})
 	}
 }
+
+func TestMoney_RoundedBy(t *testing.T) {
+	tests := []struct {
+		name       string
+		money      Money
+		multiplier float64
+		want       Money
+	}{
+		{
+			name:       "zero by zero",
+			money:      MustParse("0.00", "MXN"),
+			multiplier: 0.0,
+			want:       MustParse("0.00", "MXN"),
+		},
+		{
+			name:       "positive by zero",
+			money:      MustParse("23232232.23", "MXN"),
+			multiplier: 0.0,
+			want:       MustParse("0.00", "MXN"),
+		},
+		{
+			name:       "positive by 1",
+			money:      MustParse("23232232.23", "MXN"),
+			multiplier: 1.0,
+			want:       MustParse("23232232.23", "MXN"),
+		},
+		{
+			name:       "positive by 123",
+			money:      MustParse("456.42", "MXN"),
+			multiplier: 123.0,
+			want:       MustParse("56139.66", "MXN"),
+		},
+		{
+			name:       "positive by 0.5",
+			money:      MustParse("0.01", "MXN"),
+			multiplier: 0.5,
+			want:       MustParse("0.00", "MXN"),
+		},
+		{
+			name:       "positive a",
+			money:      MustParse("3.1", "MXN"),
+			multiplier: 0.01,
+			want:       MustParse("0.03", "MXN"),
+		},
+		{
+			name:       "positive b",
+			money:      MustParse("3.5", "MXN"),
+			multiplier: 0.01,
+			want:       MustParse("0.04", "MXN"),
+		},
+		{
+			name:       "positive c",
+			money:      MustParse("3.61", "MXN"),
+			multiplier: 0.01,
+			want:       MustParse("0.04", "MXN"),
+		},
+		{
+			name:       "positive 7.4",
+			money:      MustParse("7.4", "MXN"),
+			multiplier: 0.01,
+			want:       MustParse("0.07", "MXN"),
+		},
+		{
+			name:       "positive even",
+			money:      MustParse("7.5", "MXN"),
+			multiplier: 0.01,
+			want:       MustParse("0.08", "MXN"),
+		},
+		{
+			name:       "positive 7.6",
+			money:      MustParse("7.6", "MXN"),
+			multiplier: 0.01,
+			want:       MustParse("0.08", "MXN"),
+		},
+		{
+			name:       "positive 6.4",
+			money:      MustParse("6.4", "MXN"),
+			multiplier: 0.01,
+			want:       MustParse("0.06", "MXN"),
+		},
+		{
+			name:       "positive odd",
+			money:      MustParse("6.5", "MXN"),
+			multiplier: 0.01,
+			want:       MustParse("0.06", "MXN"),
+		}, {
+			name:       "positive 6.6",
+			money:      MustParse("6.6", "MXN"),
+			multiplier: 0.01,
+			want:       MustParse("0.07", "MXN"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			a := Money{
+				amount:   tt.money.amount,
+				currency: tt.money.currency,
+			}
+			assert.Equalf(t, tt.want, a.RoundedBy(tt.multiplier), "RoundedBy(%v)", tt.multiplier)
+		})
+	}
+}
