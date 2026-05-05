@@ -2,13 +2,14 @@ package utils
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"strconv"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_check(t *testing.T) {
-	t.Skip("Used to see the behaviour of the rounding function")
+	//	t.Skip("Used to see the behaviour of the rounding function")
 	b := int64(10)
 	for i := 0; i < 100; i++ {
 		a := int64(i)

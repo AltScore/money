@@ -4,14 +4,12 @@ import (
 	"fmt"
 	"reflect"
 
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/bsoncodec"
-	"go.mongodb.org/mongo-driver/bson/bsonrw"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 type Registrant interface {
-	RegisterTypeEncoder(t reflect.Type, dec bsoncodec.ValueEncoder)
-	RegisterTypeDecoder(t reflect.Type, dec bsoncodec.ValueDecoder)
+	RegisterTypeEncoder(t reflect.Type, dec bson.ValueEncoder)
+	RegisterTypeDecoder(t reflect.Type, dec bson.ValueDecoder)
 }
 
 // Codec is the Codec used for percent.Percent values.
@@ -24,8 +22,8 @@ var (
 
 	defaultPercentCodec = NewPercentCodec()
 
-	_ bsoncodec.ValueEncoder = defaultPercentCodec
-	_ bsoncodec.ValueDecoder = defaultPercentCodec
+	_ bson.ValueEncoder = defaultPercentCodec
+	_ bson.ValueDecoder = defaultPercentCodec
 )
 
 // RegisterPercentBSONCodec register in the BSON registry a Codec to handle objects values of type percent.Percent
@@ -50,9 +48,9 @@ func (pc *Codec) Register(registryBuilder Registrant) {
 }
 
 //nolint:cyclop // this is a simple switch for type matching
-func (pc *Codec) decodeType(_ bsoncodec.DecodeContext, vr bsonrw.ValueReader, t reflect.Type) (reflect.Value, error) {
+func (pc *Codec) decodeType(_ bson.DecodeContext, vr bson.ValueReader, t reflect.Type) (reflect.Value, error) {
 	if t != pc.typeOf {
-		return emptyValue, bsoncodec.ValueDecoderError{
+		return emptyValue, bson.ValueDecoderError{
 			Name:     "PercentDecodeValue",
 			Types:    []reflect.Type{pc.typeOf},
 			Received: reflect.Zero(t),
@@ -99,9 +97,9 @@ func (pc *Codec) decodeType(_ bsoncodec.DecodeContext, vr bsonrw.ValueReader, t 
 }
 
 // DecodeValue is the ValueDecoderFunc for time.Time.
-func (pc *Codec) DecodeValue(dc bsoncodec.DecodeContext, vr bsonrw.ValueReader, val reflect.Value) error {
+func (pc *Codec) DecodeValue(dc bson.DecodeContext, vr bson.ValueReader, val reflect.Value) error {
 	if !val.CanSet() || val.Type() != pc.typeOf {
-		return bsoncodec.ValueDecoderError{Name: "PercentDecodeValue", Types: []reflect.Type{pc.typeOf}, Received: val}
+		return bson.ValueDecoderError{Name: "PercentDecodeValue", Types: []reflect.Type{pc.typeOf}, Received: val}
 	}
 
 	elem, err := pc.decodeType(dc, vr, pc.typeOf)
@@ -114,9 +112,9 @@ func (pc *Codec) DecodeValue(dc bsoncodec.DecodeContext, vr bsonrw.ValueReader, 
 }
 
 // EncodeValue is the ValueEncoderFunc for time.TIme.
-func (pc *Codec) EncodeValue(_ bsoncodec.EncodeContext, vw bsonrw.ValueWriter, val reflect.Value) error {
+func (pc *Codec) EncodeValue(_ bson.EncodeContext, vw bson.ValueWriter, val reflect.Value) error {
 	if !val.IsValid() || val.Type() != pc.typeOf {
-		return bsoncodec.ValueEncoderError{Name: "PercentEncodeValue", Types: []reflect.Type{pc.typeOf}, Received: val}
+		return bson.ValueEncoderError{Name: "PercentEncodeValue", Types: []reflect.Type{pc.typeOf}, Received: val}
 	}
 	p := val.Interface().(Percent) //nolint:forcetypeassert // previous check ensures this is a Percent
 	return vw.WriteString(p.String())
