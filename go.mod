@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/stretchr/testify v1.11.1
 	go.mongodb.org/mongo-driver/v2 v2.6.0
-	go.uber.org/zap v1.25.0
+	go.uber.org/zap v1.28.0
 )
 
 require (
