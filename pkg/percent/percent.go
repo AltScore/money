@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/AltScore/money/pkg/money"
-	"github.com/AltScore/money/pkg/parsers"
+	"github.com/AltScore/money/v2/pkg/money"
+	"github.com/AltScore/money/v2/pkg/parsers"
 )
 
 // Percent is a 3 decimal percent value. Internally it is stored as an int64 with a 3 digits scale

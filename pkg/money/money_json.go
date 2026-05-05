@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	currency2 "github.com/AltScore/money/pkg/money/currency"
-	"github.com/AltScore/money/pkg/parsers"
+	currency2 "github.com/AltScore/money/v2/pkg/money/currency"
+	"github.com/AltScore/money/v2/pkg/parsers"
 )
 
 // UnmarshalJSON is implementation of json.Unmarshaller

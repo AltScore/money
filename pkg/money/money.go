@@ -7,11 +7,11 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/AltScore/money/pkg/money/currency"
-	"github.com/AltScore/money/pkg/utils"
+	"github.com/AltScore/money/v2/pkg/money/currency"
+	"github.com/AltScore/money/v2/pkg/utils"
 	"go.uber.org/zap"
 
-	"github.com/AltScore/money/pkg/parsers"
+	"github.com/AltScore/money/v2/pkg/parsers"
 )
 
 var (

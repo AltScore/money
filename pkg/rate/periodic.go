@@ -2,8 +2,8 @@ package rate
 
 import (
 	"fmt"
-	"github.com/AltScore/money/pkg/money"
-	"github.com/AltScore/money/pkg/percent"
+	"github.com/AltScore/money/v2/pkg/money"
+	"github.com/AltScore/money/v2/pkg/percent"
 )
 
 const (

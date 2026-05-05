@@ -1,4 +1,4 @@
-module github.com/AltScore/money
+module github.com/AltScore/money/v2
 
 go 1.19
 
