@@ -1,12 +1,11 @@
 package percent
 
 import (
-	"go.mongodb.org/mongo-driver/bson/bsoncodec"
-	"reflect"
+	"bytes"
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 type sample struct {
@@ -14,7 +13,7 @@ type sample struct {
 }
 
 func Test_MarshalBSON_is_the_inverse_of_UnmarshallBSON(t *testing.T) {
-	registerCodex()
+	reg := newTestRegistry()
 
 	values := []string{
 		"0",
@@ -31,12 +30,19 @@ func Test_MarshalBSON_is_the_inverse_of_UnmarshallBSON(t *testing.T) {
 
 		original := sample{value}
 
-		bytes, err := bson.Marshal(&original)
-
+		var buf bytes.Buffer
+		vw := bson.NewDocumentWriter(&buf)
+		enc := bson.NewEncoder(vw)
+		enc.SetRegistry(reg)
+		err := enc.Encode(&original)
 		require.Nil(t, err)
 
+		vr := bson.NewDocumentReader(bytes.NewReader(buf.Bytes()))
+		dec := bson.NewDecoder(vr)
+		dec.SetRegistry(reg)
+
 		var decoded sample
-		err = bson.Unmarshal(bytes, &decoded)
+		err = dec.Decode(&decoded)
 
 		require.Nil(t, err)
 		require.Equal(t, value, decoded.Percent)
@@ -44,29 +50,8 @@ func Test_MarshalBSON_is_the_inverse_of_UnmarshallBSON(t *testing.T) {
 	}
 }
 
-func registerCodex() {
-	codec, err := bsoncodec.NewStructCodec(bsoncodec.JSONFallbackStructTagParser)
-
-	if err != nil {
-		panic(err)
-	}
-
-	builder := bson.NewRegistryBuilder()
-	builder.RegisterDefaultEncoder(reflect.Struct, codec)
-	builder.RegisterDefaultDecoder(reflect.Struct, codec)
-
-	RegisterPercentBSONCodec(bsonRegistryBuilderAdapter{builder})
-	bson.DefaultRegistry = builder.Build()
-}
-
-type bsonRegistryBuilderAdapter struct {
-	*bsoncodec.RegistryBuilder
-}
-
-func (b bsonRegistryBuilderAdapter) RegisterTypeEncoder(t reflect.Type, dec bsoncodec.ValueEncoder) {
-	b.RegistryBuilder.RegisterTypeEncoder(t, dec)
-}
-
-func (b bsonRegistryBuilderAdapter) RegisterTypeDecoder(t reflect.Type, dec bsoncodec.ValueDecoder) {
-	b.RegistryBuilder.RegisterTypeDecoder(t, dec)
+func newTestRegistry() *bson.Registry {
+	reg := bson.NewRegistry()
+	RegisterPercentBSONCodec(reg)
+	return reg
 }
