@@ -4,8 +4,8 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/AltScore/money/pkg/money/currency"
-	"github.com/AltScore/money/pkg/parsers"
+	"github.com/AltScore/money/v2/pkg/money/currency"
+	"github.com/AltScore/money/v2/pkg/parsers"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 

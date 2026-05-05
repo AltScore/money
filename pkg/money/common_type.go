@@ -1,7 +1,7 @@
 package money
 
 import (
-	"github.com/AltScore/money/pkg/money/currency"
+	"github.com/AltScore/money/v2/pkg/money/currency"
 )
 
 const NanoDecimals = 9

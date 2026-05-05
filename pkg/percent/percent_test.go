@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/AltScore/money/pkg/money"
+	"github.com/AltScore/money/v2/pkg/money"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -1,7 +1,7 @@
 package rate
 
 import (
-	"github.com/AltScore/money/pkg/money"
+	"github.com/AltScore/money/v2/pkg/money"
 	"reflect"
 	"testing"
 )
