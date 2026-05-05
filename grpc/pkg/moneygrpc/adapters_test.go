@@ -1,7 +1,7 @@
 package moneygrpc
 
 import (
-	"github.com/AltScore/money/pkg/money"
+	"github.com/AltScore/money/v2/pkg/money"
 	gmoney "google.golang.org/genproto/googleapis/type/money"
 
 	"reflect"
